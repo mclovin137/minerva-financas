@@ -40,7 +40,7 @@ Problemas priorizados
 |---|---|---|
 | Preservar integridade monetária | casos de centavos, arredondamento e invariantes aprovados | 100% dos casos obrigatórios passam |
 | Tornar consultas temporais confiáveis | casos de data, janela útil e preço histórico | 100% dos casos obrigatórios passam |
-| Expor contratos consumíveis | endpoints com payload/status documentados e testados | 100% dos endpoints possuem integração isolada e reexecutável |
+| Expor contratos consumíveis | endpoints com payload/status documentados e testados | 100% dos endpoints possuem teste de integração reexecutável, com fixture isolada e limpeza, rollback ou reset entre casos |
 | Suportar uso concorrente no nível 3 | testes concorrentes sem isolamento ou corrupção | zero violações observadas; meta de latência p95 é TBD |
 
 ---
