@@ -1,16 +1,9 @@
 # FDDs do projeto Minerva
 
-**Autor:** Cristóvão Augusto
+Este diretório é o espelho versionado dos detalhamentos técnicos, derivados do [PRD-001](../prds/prd-001-financas-pessoais.md) e do [HLD-001](../hlds/hld-001-arquitetura.md). Cada FDD requer revisão independente de Yoda antes de código.
 
-## Para o futuro agente
-
-Feature Design Document (FDD) detalha como uma feature funciona por dentro. É exigido quando houver comportamento, regra de negócio, integração, contrato público ou risco relevante. Quem implementa escreve o FDD e Yoda o revisa; ele deriva de PRD, HLD e ADRs aplicáveis e orienta a task, mas não é PRD, HLD, ADR nem código.
-
-Este diretório é o espelho versionado; a cópia canônica de cada FDD fica na base Obsidian. O índice lista somente FDDs existentes neste repositório.
-
-## Índice
-
-| FDD | Título | Contexto | Status |
-|---|---|---|---|
-
-Nenhum FDD registrado.
+| FDD | Título | Status |
+|---|---|---|
+| [FDD-001](fdd-001-nivel-1.md) | APIs financeiras do nível 1 | proposta |
+| [FDD-002](fdd-002-nivel-2-datas.md) | Temporalidade e mercado do nível 2 | proposta |
+| [FDD-003](fdd-003-nivel-3-e-opcoes.md) | Nível 3, contratos e opções operacionais | proposta |

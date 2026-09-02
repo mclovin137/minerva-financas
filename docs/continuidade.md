@@ -1,22 +1,22 @@
 ## Task ativa
 
-Lote 1 de 4 do desafio MAPS: estabelecer governança, registrar a stack e criar a fundação Maven/SQLite, sem implementar domínio, casos de uso, REST ou frontend.
+Cadeia documental inicial do desafio MAPS em branch `docs/cadeia-inicial`: ADR-002, design system, PRD-001, HLD-001, FDDs e tasks, sem implementar domínio, casos de uso, REST ou frontend.
 
 ## Estado atual
 
-Repositório novo em `main`, com a camada de governança derivada do template autorizado. A aplicação será construída nos lotes seguintes com Java 25, Spring Boot, Maven, SQLite embarcado e React.
+Branch nova derivada de `main`, com três commits anteriores preservados e quatro commits documentais previstos nesta task. `backend/target/` permanece não rastreado e preservado. A aplicação segue Java 25, Spring Boot 4.1.1, Maven, SQLite embarcado e React.
 
 ## Decisões vigentes
 
-O lote 1 preserva somente governança, ADR de stack, esqueleto Maven, configuração SQLite, schema inicial e teste mínimo de contexto. A ADR-001 registra as decisões tecnológicas já tomadas.
+A ADR-001 registra a stack; ADR-002 aceita a Linha do Tempo. PRD-001, HLD-001, FDD-001 a FDD-003 e T-001 a T-003 formam a cadeia inicial. A escolha entre opção A e B do nível 3 e várias decisões de UI permanecem lacunas explícitas.
 
 ## Riscos e lacunas
 
-❓ LACUNA: a sincronização das pendências desta aplicação com a base Obsidian ainda precisa ser conferida. A pasta `.codex/` existente no ambiente está somente leitura e não pôde receber a cópia do template.
+❓ LACUNA: a sincronização das pendências desta aplicação com a base Obsidian ainda precisa ser feita e conferida; não alegar sincronização. ❓ LACUNA: revisão independente de Yoda/Patrick Jane ainda não ocorreu. ❓ LACUNA: rotas N1/N2, escolha A/B e metas quantitativas permanecem sem decisão.
 
 ## Próximo passo
 
-Concluir a ADR e o esqueleto Maven/SQLite, executar os gates e registrar os três commits solicitados, mantendo o domínio para os lotes 2–4.
+Executar gates documentais, conferir referências e apresentar a branch para auditoria independente; não fazer merge nem aprovar o próprio trabalho.
 
 ## Região gerada
 

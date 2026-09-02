@@ -6,6 +6,8 @@ Tasks seguem o fluxo de `docs/rules.md`. A numeração formal começa em `T-001`
 
 | # | Título | Classificação | Status |
 |---|---|---|---|
-| Governança em curso | Migração da continuidade, sincronização documental e catálogo de playbooks | Via rápida | Em andamento; ver `docs/continuidade.md` |
+| [T-001](T-001-nivel-1.md) | APIs financeiras do nível 1 | Fluxo completo | proposta |
+| [T-002](T-002-nivel-2.md) | Temporalidade e mercado do nível 2 | Fluxo completo | proposta |
+| [T-003](T-003-nivel-3.md) | Contratos e operação do nível 3 | Fluxo completo | proposta |
 
-Não há task de produto formal nem backlog de produto registrado neste momento.
+As tasks dependem de revisão independente e não autorizam implementação antes das aprovações indicadas.
