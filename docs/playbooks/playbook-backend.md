@@ -257,19 +257,76 @@ complexidade é necessária?” e “qual a menor versão correta?”. Sem respo
 
 ## A. Arquitetura em camadas
 
-Fonte da verdade: **este playbook** (convenção de projeto, sem ADR — baixo impacto e reversível).
+**Fonte da verdade: [ADR-003](../adrs/adr-003-estrutura-do-backend.md).** Esta seção é **prescritiva**,
+não consultiva: uma entrega que não a siga é defeito de arquitetura, e não preferência de estilo.
 
-| Camada | Responsabilidade | Regra prática |
+> **Por que este aviso existe.** A primeira implementação dos níveis 1 a 3 organizou o backend por
+> camada técnica global, em portas e adaptadores, enquanto esta seção já prescrevia a cadeia
+> Controller → Actor → Service → DAO. A divergência passou por revisão arquitetural sem ser
+> percebida, porque o texto anterior era cheio de ressalvas de anti-ritual e foi lido como sugestão.
+> Refazer o backend inteiro foi o custo. Se você está implementando e acha que outra organização é
+> melhor, **abra uma ADR antes de escrever o código** — não decida no meio da implementação.
+
+### A.1. Fluxo obrigatório
+
+```
+REST → Actor → { Helper, Service, Builder, DAO }
+```
+
+| Camada | Responsabilidade | Não pode |
 |---|---|---|
-| **Controller** (`api/`) | recebe a requisição HTTP | decodifica em DTO, valida, chama o Actor, serializa DTO de resposta. Nunca expõe entidade de domínio. |
-| **Actor** | orquestra o caso de uso | componente concreto; coordena as chamadas e decide o que deve ser feito. |
-| **Resolver** | define o fluxo | componente concreto; resolve dependências e escolhe caminhos. CRUD simples → passthrough **documentado**. |
-| **Service** (`service/`) | regra de negócio | lógica principal, testável sem HTTP/DB. |
-| **DAO** | acesso a dados e integrações | contrato com implementação real e dublê de teste; consultas isoladas e parametrizadas. |
+| **REST** | recebe e devolve **DTO**; valida forma; mapeia status HTTP | conter regra de negócio, conhecer DAO, expor entidade de domínio |
+| **Actor** | orquestra **um** caso de uso, do começo ao fim | calcular regra de negócio, montar SQL |
+| **Service** | regra de negócio, testável sem HTTP e sem banco | conhecer HTTP, DTO de transporte ou detalhe de driver |
+| **Builder** | monta objetos de domínio e DTOs de resposta | tomar decisão de negócio, acessar banco |
+| **DAO** | **único** que fala SQL; consultas sempre parametrizadas | conter regra de negócio, devolver erro cru do driver |
+| **Helper** | apoio puro e sem estado | guardar estado, acessar banco ou rede |
+| **Domínio** | entidades, objetos de valor e invariantes | depender de framework, JDBC ou serialização |
 
-**Regra anti-ritual:** a camada sempre existe como responsabilidade nomeada, mas só ganha
-**interface** quando há segunda implementação ou decisão real. Interface fica reservada a **DAO**
-e, para a camada `Service`, a módulos com cenário crítico de QA.
+### A.2. Organização de pastas
+
+Pasta por **entidade**, subpasta por **função** — nunca camada técnica global:
+
+```
+br.com.minerva.financas.<entidade>.<funcao>
+
+contacorrente/{rest,actor,service,builder,dao,helper,dto,dominio}
+ativo/{rest,actor,service,builder,dao,helper,dto,dominio}
+movimentacao/…   posicao/…   usuario/…
+comum/            ← só o que é realmente compartilhado por mais de uma entidade
+```
+
+Quem mexe em uma funcionalidade mexe no REST, no actor, no service e no DAO **dela**, quase nunca em
+todos os services do sistema. A estrutura acompanha o uso real.
+
+`comum/` é o risco desta organização: revise cada inclusão, porque é assim que ele vira depósito.
+
+### A.3. Nomenclatura
+
+- O nome diz **o que a classe faz**: `CriarAtivoActor`, `ConsultarSaldoActor`, `LancamentoBuilder`,
+  `ContaCorrenteDAO`, `AutenticacaoService`.
+- **Interface leva prefixo `I`**; a implementação usa o mesmo nome sem ele: `IContaCorrenteDAO` e
+  `ContaCorrenteDAO`.
+- **Sem abreviação** em classe, método, campo ou parâmetro. `repositorio`, não `repo`; `banco`, não
+  `db`.
+
+### A.4. Fábrica contra duplicação
+
+Operações irmãs — crédito e débito, compra e venda, um relatório por tipo — **compartilham um caminho
+no REST**, e uma **fábrica** escolhe o actor concreto:
+
+```java
+LancamentoActorFactory   → CreditoActor | DebitoActor
+MovimentacaoActorFactory → CompraActor  | VendaActor
+PosicaoActorFactory      → PosicaoSincronaActor | PosicaoAssincronaActor
+```
+
+Em vez de um endpoint por relatório, **um endpoint e uma fábrica**. A regra de parada: só crie a
+fábrica quando existirem pelo menos **duas** implementações concretas; antes disso ela é indireção
+sem ganho.
+
+Quando o contrato público fixa rotas distintas — como as cinco rotas literais do enunciado MAPS —,
+elas **permanecem**. A fábrica elimina a duplicação atrás do controller; não reescreve o contrato.
 
 ## A.1. DDD tático em módulos críticos
 
@@ -308,7 +365,9 @@ Antes de aceitar uma mudança backend, verificar:
 
 ## B. Contratos de entrada, saída e falha
 
-- **Todo request e response passa por DTO** — nunca serializar ou bindar entidade de domínio direto.
+- **Todo request e response passa por DTO, sem exceção** — nunca serializar nem bindar entidade de
+  domínio direto, e nunca devolver um tipo de domínio "porque os campos são os mesmos". Os campos são
+  os mesmos até o dia em que o domínio ganha um campo interno e ele vaza no JSON.
   DTO de entrada tem allowlist explícita de campos, evitando mass assignment; validar tipo, tamanho e
   enum na borda, com zero-trust de input.
 - **DAO retorna erros tipados** (`ErrNotFound`, `ErrConflict`), nunca o erro cru do driver. O
@@ -320,9 +379,15 @@ Antes de aceitar uma mudança backend, verificar:
 
 ## C. Disciplina de implementação (Object Calisthenics)
 
+**Escopo, decidido na [ADR-003](../adrs/adr-003-estrutura-do-backend.md):** aplica-se a domínio,
+actors, services, builders e helpers. **DTOs são isentos das regras 8 e 9** — máximo de duas
+variáveis de instância e ausência de acessores —, porque um DTO é portador de dados por definição e
+submetê-lo a essas duas regras exigiria mapeamento manual de serialização sem nenhum ganho de
+encapsulamento. As outras sete regras valem em todo o backend, DTOs incluídos.
+
 Disciplina de legibilidade e encapsulamento, **não um conjunto de dogmas**. Aplique quando reduzir
 acoplamento ou tornar invariantes visíveis; não crie wrappers, métodos, tipos ou arquivos que só
-aumentem navegação. A seção 21 prevalece.
+aumentem navegação. A seção 21 prevalece — exceto sobre o escopo acima, que é decisão registrada.
 
 | Princípio | Aplicação | Evitar |
 |---|---|---|

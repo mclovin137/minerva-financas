@@ -1,6 +1,6 @@
 ### HLD: Arquitetura Minerva Finanças
 
-Versão: 1.0
+Versão: 1.1
 Data: 2026-09-02
 Responsável: Yoda
 Revisor: Patrick Jane
@@ -9,12 +9,18 @@ Revisor: Patrick Jane
 
 ### Objetivo técnico
 
-Organizar o sistema em camadas DDD, isolando o domínio de transporte HTTP, JSON, framework e persistência. O domínio usa invariantes financeiros e contratos próprios; adaptadores traduzem entradas e saídas sem importar detalhes de infraestrutura para o núcleo.
+> **Atualização de 2026-09-02:** a organização concreta do backend — pastas, camadas e nomenclatura —
+> passou a ser decidida pela [ADR-003](../adrs/adr-003-estrutura-do-backend.md), que substitui a
+> estrutura de portas e adaptadores descrita adiante. O que segue valendo deste HLD é a **direção de
+> dependência** (o domínio não conhece transporte nem persistência) e todo o restante do documento:
+> fluxos, modelo de dados, segurança, observabilidade e riscos.
+
+Organizar o sistema em camadas, isolando o domínio de transporte HTTP, JSON, framework e persistência. O domínio usa invariantes financeiros e contratos próprios; adaptadores traduzem entradas e saídas sem importar detalhes de infraestrutura para o núcleo.
 
 Dependências com outros sistemas
 - Interface React com TypeScript, consumidora dos contratos REST.
 - Banco embarcado SQLite e processo standalone.
-- Dockerfile e docker-compose no nível 3.
+- Dockerfile e docker-compose no nível 3; as opções A (Basic/isolamento) e B (posição assíncrona) são cumulativas e obrigatórias.
 
 ---
 
@@ -28,7 +34,7 @@ Ambiente de implantação
 
 Tecnologias principais
 - Java 25, Spring Boot 4.1.1 e Maven, conforme [ADR-001](../adrs/adr-001-stack-da-aplicacao.md).
-- Spring JDBC em vez de JPA: a opção B exige memória constante; JPA pode carregar grafo e manter cache de primeiro nível proporcional à unidade de trabalho.
+- Spring JDBC em vez de JPA: a opção B exige leitura incremental com limite de heap; JPA pode carregar grafo e manter cache de primeiro nível proporcional à unidade de trabalho.
 - SQLite embarcado; React e TypeScript na fronteira do consumidor.
 
 Padrões adotados
@@ -75,6 +81,8 @@ Relações
 
 Fonte de verdade
 - Fatos persistidos no SQLite. Memória, cache de request e resultado assíncrono não são fonte de verdade.
+- Não existe tabela de conta com saldo materializado: a conta corrente é a projeção dos lançamentos do proprietário ([FDD-001](../fdds/fdd-001-nivel-1.md), D-A5). `Conta` é agregado de domínio, não tabela.
+- Preço unitário e quantidade são persistidos como inteiros escalados (10⁻⁸ e 10⁻²), nunca com afinidade `NUMERIC`/`REAL`, para não violar a proibição de ponto flutuante da [ADR-001](../adrs/adr-001-stack-da-aplicacao.md) ([FDD-001](../fdds/fdd-001-nivel-1.md), D-A2).
 
 ---
 
@@ -93,8 +101,8 @@ Abordagem geral
 - Consultas paginadas ou incrementais e índices temporais reduzem materialização; a opção B separa criação da execução e usa processamento paralelo.
 
 Técnicas aplicadas
-- WAL para leitores concorrentes, `busy_timeout` para contenção curta e fila/escritor serializado para SQLite. Thread-safety exige não compartilhar estado mutável de request e coordenar o ponto único de escrita.
-- Backpressure e limite de execuções são necessários; valores quantitativos permanecem TBD.
+- WAL para leitores concorrentes, `busy_timeout` para contenção curta e escrita serializada pelo próprio SQLite. Toda transação que lê para validar e depois escreve abre em `BEGIN IMMEDIATE` ([FDD-001](../fdds/fdd-001-nivel-1.md), D-A7); não há lock de aplicação, por ser falsa garantia fora do processo. Thread-safety exige não compartilhar estado mutável de request e coordenar o ponto único de escrita.
+- Backpressure e limite de execuções são necessários. O cenário verificável da opção B é 200.000 movimentações, variação de heap abaixo de 64 MB medida por `Runtime` antes/depois e mínimo de 2 threads observáveis; reproduzir pelo comando `./mvnw -pl backend -Dtest=PosicaoDesempenhoIT test`.
 
 Meta de disponibilidade
 - TBD; execução standalone é requisito, não promessa de SLA.
@@ -140,7 +148,7 @@ Dashboards e alertas
 
 #### ORM materializa memória excessiva
 - **Probabilidade:** média
-- **Impacto:** opção B viola memória constante.
+- **Impacto:** opção B excede a variação de heap de 64 MB.
 - **Mitigação:** Spring JDBC, cursores/leitura incremental e medição de heap.
 - **Plano de contingência:** bloquear opção B até reduzir materialização.
 
@@ -156,11 +164,18 @@ Dashboards e alertas
 ADRs associados
 - [ADR-001 Stack da aplicação](../adrs/adr-001-stack-da-aplicacao.md).
 - [ADR-002 Direção visual](../adrs/adr-002-direcao-visual.md).
+- [ADR-003 Estrutura de pacotes e camadas do backend](../adrs/adr-003-estrutura-do-backend.md), que substitui a organização de pacotes deste HLD.
 
 Decisões pendentes
-- ❓ LACUNA: escolher opção A ou B para a entrega final do nível 3, se ambas não forem mantidas.
-- ❓ LACUNA: metas quantitativas de latência, concorrência, disponibilidade, tracing e limites de fila.
-- ❓ LACUNA: gestão de segredos, criptografia e tratamento de ausência de preço histórico.
+- As opções A e B são obrigatórias e cumulativas; não há decisão pendente sobre alternativa.
+- ❓ LACUNA: metas de latência, disponibilidade e tracing não são necessárias para o critério D3 desta rodada. O limite de execuções pendentes deixou de ser lacuna: está fixado em quatro por usuário no [FDD-003](../fdds/fdd-003-nivel-3-e-opcoes.md), D-C3.
+- ❓ LACUNA: gestão de segredos e criptografia em trânsito/repouso. **O tratamento de ausência de preço histórico deixou de ser lacuna**: está decidido no [FDD-002](../fdds/fdd-002-nivel-2-datas.md), D-B3, na revisão arquitetural de 2026-09-02.
+- Nomes de pacote e direção de dependência entre camadas deixaram de ser pendência: com a ADR-001 aceita, o mapa normativo está no [FDD-001](../fdds/fdd-001-nivel-1.md), item 7, com pacote base `br.com.minerva.financas` e gate verificável no pipeline `review`. Este HLD não mantém segunda cópia da lista, para não divergir.
 
 Próximos passos
-- Revisão independente do HLD, elaboração/revisão dos FDDs e só então execução das tasks correspondentes.
+- FDD-001, FDD-002 e FDD-003 foram revisados e **aprovados por Yoda em 2026-09-02**; T-001, T-002 e T-003 estão liberadas quanto à dependência de governança. Falta a revisão independente do HLD por Patrick Jane e a decisão do usuário sobre os valores de seed do nível 3.
+
+### Histórico
+
+- 2026-09-02: versão 1.0.
+- 2026-09-02: versão 1.1 — revisão arquitetural dos três FDDs. Fechadas as lacunas de ausência de preço histórico, limite de execuções pendentes e fronteiras de pacote; registradas a projeção da conta, a representação exata de preço/quantidade e o modo de transação `BEGIN IMMEDIATE`.
