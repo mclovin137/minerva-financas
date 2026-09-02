@@ -11,4 +11,4 @@ Esta pasta contém o espelho versionado das Architecture Decision Records (ADRs)
 | ADR | Título | Contexto | Status |
 |---|---|---|---|
 
-Nenhum ADR registrado.
+| ADR 001 | Stack da aplicação | Java 25, Spring Boot, Maven, SQLite, JDBC e React para o desafio MAPS | aceita |
