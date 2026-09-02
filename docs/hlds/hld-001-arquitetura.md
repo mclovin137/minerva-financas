@@ -3,6 +3,7 @@
 Versão: 1.0
 Data: 2026-09-02
 Responsável: Yoda
+Revisor: Patrick Jane
 
 ---
 
@@ -163,4 +164,3 @@ Decisões pendentes
 
 Próximos passos
 - Revisão independente do HLD, elaboração/revisão dos FDDs e só então execução das tasks correspondentes.
-

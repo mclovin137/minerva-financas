@@ -9,5 +9,5 @@
 | HLD-001: fronteiras e arquitetura | Base Minerva: `hlds/hld-001-arquitetura.md` | Yoda | 2026-09-03 23:59 |
 | FDD-001, FDD-002 e FDD-003 | Base Minerva: `fdds/` | Severino | 2026-09-03 23:59 |
 | T-001, T-002 e T-003 | Base Minerva: `tasks/` | Severino | 2026-09-03 23:59 |
-| Roadmap de produto | Base Minerva: `roadmap/roadmap.md` | Yoda | 2026-09-03 23:59 |
+| Roadmap de produto | Base Minerva: `roadmap.md` | Yoda | 2026-09-03 23:59 |
 | Remoção do HLD residual Neo | Base Minerva: nota arquivada do HLD removido | Yoda | 2026-09-03 23:59 |

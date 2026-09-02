@@ -57,7 +57,7 @@ Nível 3 executável standalone, com Docker e comprovação da opção escolhida
 - [ ] Concorrência não corrompe dados; Docker executa standalone.
 
 ## Testes obrigatórios
-- [ ] Integração idempotente de cada endpoint.
+- [ ] Integração reexecutável de cada endpoint, com fixture isolada e limpeza, rollback ou reset; sem alterar payload/endpoint para adicionar idempotência semântica.
 - [ ] Concorrência e teste específico da opção A ou B escolhida.
 
 ## Evidências obrigatórias
@@ -79,4 +79,3 @@ Nível 3 executável standalone, com Docker e comprovação da opção escolhida
 
 ## Histórico
 - 2026-09-02: task criada com status proposta.
-

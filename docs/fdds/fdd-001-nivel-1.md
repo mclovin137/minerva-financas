@@ -3,6 +3,7 @@
 Versão: 1.0
 Data: 2026-09-02
 Responsável: Severino
+Revisor: Yoda
 
 ---
 
@@ -55,7 +56,7 @@ Implementa o primeiro recorte do [PRD-001](../prds/prd-001-financas-pessoais.md)
 
 ### 6. Erros, exceções e fallback
 - Matriz: escala/sinal/tipo inválido -> 400; ativo ausente -> 404; saldo ou quantidade insuficiente -> 409; falha de persistência -> 500 sem detalhe sensível.
-- Estratégias de resiliência: timeout de banco e retry somente para leitura segura; não repetir POST sem chave/idempotência definida.
+- Estratégias de resiliência: timeout de banco e retry somente para leitura segura. O contrato MAPS não prevê chave de idempotência nos POSTs; proteção contra repetição é risco operacional e TBD, sem alterar payload ou endpoint.
 - Política de fallback: falha transacional não altera nenhum fato e é reportada ao cliente.
 - Invariantes: dinheiro em centavos; floor; quantidade não negativa; saldo não negativo; compra/venda e lançamento correlato atômicos.
 
@@ -86,7 +87,7 @@ Implementa o primeiro recorte do [PRD-001](../prds/prd-001-financas-pessoais.md)
 - Preço aceita até oito casas, quantidade até duas, dinheiro até duas, e cálculos com floor.
 - Compra gera saída e venda gera entrada; venda acima da posição é rejeitada.
 - Posição retorna um registro por ativo e as quatro fórmulas do PRD.
-- Cada endpoint definido durante a implementação possui teste REST idempotente e evidência de pipeline.
+- Cada endpoint definido durante a implementação possui teste REST com fixture isolada, limpeza, rollback ou reset entre casos, reexecutável e com evidência de pipeline. Isso não exige idempotência semântica do POST.
 - FDD requer revisão e aprovação de Yoda antes de código.
 
 ### 10. Riscos e mitigação
@@ -101,4 +102,3 @@ Implementa o primeiro recorte do [PRD-001](../prds/prd-001-financas-pessoais.md)
 - **Impacto:** divergência financeira.
 - **Mitigação:** valor de domínio em centavos e testes de fronteira.
 - **Plano de contingência:** rejeitar cálculo sem referência determinística.
-

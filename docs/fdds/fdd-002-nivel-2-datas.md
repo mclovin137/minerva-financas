@@ -3,6 +3,7 @@
 Versão: 1.0
 Data: 2026-09-02
 Responsável: Severino
+Revisor: Yoda
 
 ---
 
@@ -86,7 +87,7 @@ Detalha FR-005 e FR-006 do [PRD-001](../prds/prd-001-financas-pessoais.md) nas f
 - Lista exige início e fim inclusive/inclusive.
 - Preço selecionado é o último com data menor ou igual à consulta, nunca um preço futuro.
 - Inserção fora de ordem é rejeitada se gerar negatividade em qualquer data posterior.
-- Cada endpoint temporal tem teste REST idempotente, persistência própria e evidência.
+- Cada endpoint temporal tem teste REST com persistência/fixture própria, limpeza, rollback ou reset entre casos, reexecutável e com evidência. Não há exigência de idempotência semântica no POST.
 - FDD requer revisão e aprovação de Yoda antes de código.
 
 ### 10. Riscos e mitigação
@@ -101,4 +102,3 @@ Detalha FR-005 e FR-006 do [PRD-001](../prds/prd-001-financas-pessoais.md) nas f
 - **Impacto:** valor de mercado incorreto.
 - **Mitigação:** predicado de data e teste de regressão.
 - **Plano de contingência:** retirar consulta e preservar preço histórico.
-

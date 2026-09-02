@@ -54,7 +54,7 @@ APIs REST JSON do nível 1 com invariantes financeiras demonstradas.
 ## Critérios de aceite
 - [ ] Saldo nunca negativo e operações correlatas atômicas.
 - [ ] Escalas e floor conforme PRD; posição e fórmulas conferidas.
-- [ ] Todos os endpoints têm integração idempotente.
+- [ ] Todos os endpoints têm integração com fixture isolada e reexecutável por limpeza, rollback ou reset; não se exige idempotência semântica do POST.
 
 ## Testes obrigatórios
 - [ ] Unitários de dinheiro, fórmulas e invariantes.
@@ -80,4 +80,3 @@ APIs REST JSON do nível 1 com invariantes financeiras demonstradas.
 
 ## Histórico
 - 2026-09-02: task criada com status proposta.
-

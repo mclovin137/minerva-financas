@@ -59,7 +59,7 @@ Nível 2 temporalmente consistente e verificável.
 
 ## Testes obrigatórios
 - [ ] Unitários de datas, escalas e invariantes.
-- [ ] Integração idempotente de cada endpoint temporal e persistência.
+- [ ] Integração reexecutável de cada endpoint temporal, com fixture isolada e limpeza, rollback ou reset; sem exigir idempotência semântica do POST.
 
 ## Evidências obrigatórias
 - [ ] Relatórios com casos de fronteira e SQL temporal.
@@ -79,4 +79,3 @@ Nível 2 temporalmente consistente e verificável.
 
 ## Histórico
 - 2026-09-02: task criada com status proposta.
-

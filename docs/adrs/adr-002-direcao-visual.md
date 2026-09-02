@@ -11,6 +11,8 @@ ai-first: true
 
 # ADR 002: Direção visual Template A, Linha do Tempo
 
+Revisor: Patrick Jane
+
 ## Para o futuro agente
 
 Esta ADR decide a direção visual da aplicação consumidora Minerva Finanças. Ela importa sempre que uma tela, componente ou interação for desenhada; o contrato verificável está em [`docs/design/README.md`](../design/README.md) e nos documentos ligados a ele.

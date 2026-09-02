@@ -3,6 +3,7 @@
 Versão: 1.0
 Data: 2026-09-02
 Responsável: Severino
+Revisor: Yoda
 
 ---
 
@@ -110,7 +111,7 @@ Detalha os contratos N3 do [PRD-001](../prds/prd-001-financas-pessoais.md) e os 
 - B retorna id, 425 enquanto pendente, 200 terminado, descarta conteúdo, processa centenas de milhares com memória constante e paralelismo demonstrado.
 - Concorrência não viola saldo, posição ou isolamento.
 - Dockerfile e docker-compose permitem execução standalone; deploy cloud permanece adiado.
-- Cada endpoint tem integração idempotente com evidência de request/response publicada.
+- Cada endpoint tem integração com fixture isolada e reexecutável por limpeza, rollback ou reset entre casos, com evidência de request/response publicada. Isso não torna o POST semanticamente idempotente.
 - FDD requer revisão e aprovação de Yoda antes de código.
 
 ### 10. Riscos e mitigação
@@ -125,4 +126,3 @@ Detalha os contratos N3 do [PRD-001](../prds/prd-001-financas-pessoais.md) e os 
 - **Impacto:** indisponibilidade.
 - **Mitigação:** JDBC incremental, heap profiling e carga com centenas de milhares.
 - **Plano de contingência:** interromper execuções novas e preservar somente ids.
-

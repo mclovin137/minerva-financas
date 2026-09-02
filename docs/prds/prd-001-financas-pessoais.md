@@ -3,6 +3,7 @@
 Versão: 1.0
 Data: 2026-09-02
 Responsável: Yoda
+Revisor: Patrick Jane
 
 ---
 
@@ -39,7 +40,7 @@ Problemas priorizados
 |---|---|---|
 | Preservar integridade monetária | casos de centavos, arredondamento e invariantes aprovados | 100% dos casos obrigatórios passam |
 | Tornar consultas temporais confiáveis | casos de data, janela útil e preço histórico | 100% dos casos obrigatórios passam |
-| Expor contratos consumíveis | endpoints com payload/status documentados e testados | 100% dos endpoints possuem integração idempotente |
+| Expor contratos consumíveis | endpoints com payload/status documentados e testados | 100% dos endpoints possuem integração isolada e reexecutável |
 | Suportar uso concorrente no nível 3 | testes concorrentes sem isolamento ou corrupção | zero violações observadas; meta de latência p95 é TBD |
 
 ---
@@ -345,7 +346,7 @@ Patrick Jane audita critérios e testes observáveis; o implementador não aprov
 
 Tipos de teste obrigatórios
 - Testes unitários de parsing, escala, centavos, floor, fórmulas, datas úteis, janela e invariantes.
-- Testes de integração para cada endpoint, incluindo persistência, códigos HTTP, payloads e teste idempotente isolado.
+- Testes de integração para cada endpoint, incluindo persistência, códigos HTTP e payloads, com fixture isolada e reexecução segura por limpeza, rollback ou reset entre casos. Não exigir idempotência semântica dos POSTs.
 - Testes de contrato para as rotas exatas do nível 3.
 - Testes de segurança da opção A para autenticação, autorização e isolamento.
 - Testes concorrentes para thread-safety e testes de carga/memória para a opção B.
@@ -353,4 +354,3 @@ Tipos de teste obrigatórios
 
 Estratégia de validação
 - Derivar casos dos critérios acima, com dados próprios por teste, transações limpas e evidências de request/response publicadas pelo pipeline. Validar série temporal com inserção fora de ordem e comparar com uma referência independente. Medir memória e paralelismo em cenário controlado; se a meta numérica não estiver definida, registrar TBD em vez de declarar sucesso quantitativo.
-
