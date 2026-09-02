@@ -30,3 +30,4 @@ __pycache__/
 .mypy_cache/
 .cache/
 node_modules/
+backend/data/

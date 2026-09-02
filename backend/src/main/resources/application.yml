@@ -1,0 +1,21 @@
+spring:
+  application:
+    name: minerva-financas
+  datasource:
+    url: jdbc:sqlite:data/minerva-financas.db
+    driver-class-name: org.sqlite.JDBC
+    hikari:
+      connection-init-sql: PRAGMA busy_timeout = 5000
+  sql:
+    init:
+      mode: always
+
+---
+spring:
+  config:
+    activate:
+      on-profile: test
+  datasource:
+    url: jdbc:sqlite:file:minerva-test?mode=memory&cache=shared
+    hikari:
+      connection-init-sql: PRAGMA busy_timeout = 5000
