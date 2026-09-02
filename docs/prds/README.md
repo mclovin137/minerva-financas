@@ -13,4 +13,4 @@ PRDs são criados just-in-time para uma task pela skill [`../skills/gerar-prd.md
 | PRD | Título | Contexto | Status |
 |---|---|---|---|
 
-Nenhum PRD registrado. O projeto recomeçou como template agnóstico de tecnologia e ainda não tem PRD; a cópia canônica de cada PRD futuro fica na base Obsidian, em `prds/`.
+| [PRD-001](prd-001-financas-pessoais.md) | Minerva Finanças pessoais | Requisitos verificáveis dos níveis 1, 2 e 3 do desafio MAPS | proposta |
