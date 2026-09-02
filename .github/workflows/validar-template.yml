@@ -1,0 +1,186 @@
+name: Validar template
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  validar-documentacao-e-adaptadores:
+    name: Validar documentação e adaptadores
+    runs-on: ubuntu-latest
+    steps:
+      - name: Obter o repositório
+        uses: actions/checkout@v4
+
+      - name: Validar JSON
+        shell: bash
+        run: |
+          set -euo pipefail
+          while IFS= read -r -d '' arquivo; do
+            jq empty "$arquivo"
+          done < <(find .claude .codex -type f -name '*.json' -print0)
+          jq -e '.hooks.SessionStart == null' .claude/settings.json >/dev/null
+          jq -e '(.hooks.PreToolUse | type) == "array" and any(.hooks.PreToolUse[]; .matcher == "Write|Edit|NotebookEdit|Bash" and any(.hooks[]; .type == "command" and (.command | endswith("guarda-orquestrador.sh")))) and .hooks.PostToolUse == null' .claude/settings.json >/dev/null
+          jq -e '.hooks.SessionStart == null' .codex/hooks.json >/dev/null
+          jq -e '.hooks.PreToolUse == null and .hooks.PostToolUse == null' .codex/hooks.json >/dev/null
+
+      - name: Validar sintaxe dos scripts shell
+        shell: bash
+        run: |
+          set -euo pipefail
+          while IFS= read -r -d '' arquivo; do
+            bash -n "$arquivo"
+          done < <(find .claude .codex .github/scripts .githooks -type f \( -name '*.sh' -o -name '*.bash' -o -name 'pre-push' \) -print0)
+
+      - name: Validar guard e hook local versionado
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f .githooks/pre-push
+          grep -Fqx 'exec bash .github/scripts/validar-pipeline-local.sh' .githooks/pre-push
+          bash .github/scripts/guard-lib-md.sh
+
+      - name: Validar paridade dos adaptadores
+        shell: bash
+        run: |
+          set -euo pipefail
+          for arquivo in docs/skills/*.md; do
+            nome="$(basename "$arquivo" .md)"
+            [ "$nome" = 'README' ] && continue
+            test -f ".claude/skills/$nome/SKILL.md"
+          done
+          for diretorio in .claude/skills/*; do
+            [ -d "$diretorio" ] || continue
+            nome="$(basename "$diretorio")"
+            test -f "docs/skills/$nome.md"
+          done
+          for arquivo in docs/agentes/*.md; do
+            nome="$(basename "$arquivo" .md)"
+            [ "$nome" = 'README' ] && continue
+            [ "$nome" = 'oraculo' ] && continue
+            test -f ".claude/agents/$nome.md"
+          done
+          for arquivo in .claude/agents/*.md; do
+            nome="$(basename "$arquivo" .md)"
+            test -f "docs/agentes/$nome.md"
+          done
+
+      - name: Rejeitar bytecode e cache versionáveis
+        shell: bash
+        run: |
+          set -euo pipefail
+          if find . -type d -name '__pycache__' -o -type f -name '*.pyc' | grep -q .; then
+            printf 'Bytecode ou cache não deve ser versionado.\n' >&2
+            exit 1
+          fi
+
+      - name: Executar smoke tests dos hooks
+        shell: bash
+        run: |
+          set -euo pipefail
+          temporario="$(mktemp -d)"
+          trap 'rm -rf "$temporario"' EXIT
+          executar() {
+            local nome="$1"
+            shift
+            local codigo=0
+            : >"$temporario/saida"
+            : >"$temporario/erro"
+            printf '%s' '{"tool_name":"Read","tool_input":{}}' | "$@" >"$temporario/saida" 2>"$temporario/erro" || codigo=$?
+            if [ "$codigo" -ne 0 ]; then
+              printf 'Hook falhou: %s (código de saída %s)\n' "$nome" "$codigo" >&2
+              printf 'Comando: %s\n' "$*" >&2
+              printf 'stderr do hook:\n' >&2
+              cat "$temporario/erro" >&2
+              exit 1
+            fi
+            if [ -s "$temporario/erro" ]; then
+              printf 'Hook gerou stderr: %s\n' "$nome" >&2
+              cat "$temporario/erro" >&2
+              exit 1
+            fi
+          }
+          executar 'Claude guarda' bash .claude/hooks/guarda-orquestrador.sh
+          executar 'Codex guarda' bash .codex/hooks/guarda-orquestrador.sh
+          executar 'Claude sessão' bash .claude/hooks/sessao-orquestrador.sh
+          executar 'Codex sessão' bash .codex/hooks/sessao-orquestrador.sh
+          cp -a . "$temporario/repo"
+          executar 'Claude continuidade init' bash "$temporario/repo/.claude/hooks/sincronizar-continuidade.sh" init
+          executar 'Claude continuidade sync' bash "$temporario/repo/.claude/hooks/sincronizar-continuidade.sh" sync
+          executar 'Codex continuidade init' bash "$temporario/repo/.codex/hooks/sincronizar-continuidade.sh" init
+          executar 'Codex continuidade sync' bash "$temporario/repo/.codex/hooks/sincronizar-continuidade.sh" sync
+
+          sem_regiao() {
+            sed '/<!-- minerva-continuity:generated:start -->/,/<!-- minerva-continuity:generated:end -->/d' "$1"
+          }
+          continuidade="$temporario/repo/docs/continuidade.md"
+          sem_regiao "$continuidade" >"$temporario/antes"
+          printf '\nMudação de smoke do hook.\n' >>"$temporario/repo/README.md"
+          executar 'Claude continuidade após mutação' bash "$temporario/repo/.claude/hooks/sincronizar-continuidade.sh" sync
+          sem_regiao "$continuidade" >"$temporario/depois"
+          if ! cmp -s "$temporario/antes" "$temporario/depois"; then
+            printf 'Invariante quebrada: o hook alterou docs/continuidade.md fora da região gerada.\n' >&2
+            diff -u "$temporario/antes" "$temporario/depois" >&2 || true
+            exit 1
+          fi
+          cp "$continuidade" "$temporario/primeira-sincronizacao"
+          executar 'Codex continuidade idempotente' bash "$temporario/repo/.codex/hooks/sincronizar-continuidade.sh" sync
+          if ! cmp -s "$temporario/primeira-sincronizacao" "$continuidade"; then
+            printf 'Invariante quebrada: a segunda sincronização não foi idempotente.\n' >&2
+            diff -u "$temporario/primeira-sincronizacao" "$continuidade" >&2 || true
+            exit 1
+          fi
+          for marcador in '<!-- minerva-continuity:generated:start -->' '<!-- minerva-continuity:generated:end -->'; do
+            ocorrencias="$(grep -Fc "$marcador" "$continuidade" || true)"
+            if [ "$ocorrencias" -ne 1 ]; then
+              printf 'Invariante quebrada: o marcador %s deveria aparecer 1 vez em docs/continuidade.md, encontradas %s.\n' "$marcador" "$ocorrencias" >&2
+              exit 1
+            fi
+          done
+
+      - name: Rejeitar referências aos artefatos de continuidade substituídos
+        shell: bash
+        run: |
+          set -euo pipefail
+          if rg -n 'docs/(plan|state)\.md' README.md docs .claude .codex .github \
+            --glob '*.md' --glob '*.sh' --glob '*.bash' --glob '*.json' --glob '*.yml' --glob '*.yaml'; then
+            printf 'Há referência a artefato de continuidade substituído.\n' >&2
+            exit 1
+          fi
+
+      - name: Validar forma de docs/continuidade.md
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 .github/scripts/verificar-continuidade.py docs/continuidade.md
+
+      - name: Validar referências Markdown internas
+        shell: bash
+        run: |
+          set -euo pipefail
+          # O espelho histórico completo é progressivo. Este gate cobre os
+          # documentos operacionais e adaptadores mantidos pelo template.
+          while IFS= read -r referencia; do
+            origem="${referencia%%:*}"
+            link="${referencia#*:*:}"
+            destino="${link#](}"
+            destino="${destino%)}"
+            destino="${destino%%#*}"
+
+            case "$destino" in
+              http://*|https://*) continue ;;
+            esac
+
+            if [ ! -f "$(dirname "$origem")/$destino" ]; then
+              printf 'Referência Markdown inexistente em %s: %s\n' "$origem" "$destino" >&2
+              exit 1
+            fi
+          done < <(grep -rHnoE ']\(([^)#?]+\.md)(#[^)]*)?\)' \
+            README.md \
+            docs \
+            --include='*.md' 2>/dev/null || true)

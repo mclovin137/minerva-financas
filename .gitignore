@@ -1,0 +1,32 @@
+# Segredos e configuração local
+.claude/worktrees/
+.claude/RESUME.md
+.validacao/
+.env
+.env.*
+!.env.example
+
+# Chaves e certificados privados
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+*.cer
+*.csr
+
+# Estado e variáveis locais de infraestrutura
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+
+# IDE e cache local
+.idea/
+.vscode/
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+.cache/
+node_modules/
