@@ -19,20 +19,12 @@ export function useRecurso<T>(carregar: () => Promise<T>, dependencias: unknown[
   const [erro, definirErro] = useState<string | null>(null)
   const [gatilho, definirGatilho] = useState(0)
   const recarregamentosPendentes = useRef<Array<() => void>>([])
-  const recarregamentoConcluido = useRef(false)
 
   function concluirRecarregamentos() {
     recarregamentosPendentes.current.splice(0).forEach((resolver) => resolver())
   }
 
   useEffect(() => concluirRecarregamentos, [])
-
-  useEffect(() => {
-    if (!recarregamentoConcluido.current) return
-
-    recarregamentoConcluido.current = false
-    concluirRecarregamentos()
-  }, [carregando, dados, erro, gatilho])
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const executar = useCallback(carregar, dependencias)
@@ -61,7 +53,10 @@ export function useRecurso<T>(carregar: () => Promise<T>, dependencias: unknown[
       .finally(() => {
         if (!cancelado) {
           definirCarregando(false)
-          recarregamentoConcluido.current = true
+          // A Promise de recarregar só pode concluir depois que esta execução terminou. Resolver
+          // no rerender que dispara a execução libera a tela antes da resposta e deixa os
+          // consumidores lendo o valor anterior.
+          concluirRecarregamentos()
         }
       })
 

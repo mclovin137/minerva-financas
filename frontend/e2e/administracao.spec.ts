@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { DIA_UTIL, definirCursorDeData, entrar } from './apoio'
+import { DIA_UTIL, definirCursorDeData, entrar, lancar } from './apoio'
 
 /** Fluxo do papel administrativo: CRUD do acervo compartilhado e preço de mercado por data. */
 test.describe('Administração do acervo', () => {
@@ -74,6 +74,17 @@ test.describe('Administração do acervo', () => {
 
     await page.getByRole('button', { name: 'Sair', exact: true }).click()
     await entrar(page, 'usuario7', 'senha7')
+    await definirCursorDeData(page, DIA_UTIL)
+    await page.getByRole('button', { name: 'Conta corrente', exact: true }).click()
+    await lancar(page, 'crédito', '100,00', 'saldo para consultar preço')
+    await page.getByRole('button', { name: 'Carteira', exact: true }).click()
+    await page.getByRole('button', { name: 'Nova compra' }).click()
+    const compra = page.getByRole('dialog')
+    await compra.getByLabel('Ativo').selectOption('ATIVO4')
+    await compra.getByLabel('Quantidade').fill('1,00')
+    await compra.getByLabel('Valor da movimentação (R$)').fill('42,50')
+    await compra.getByRole('button', { name: 'Comprar' }).click()
+    await expect(page.getByRole('status')).toContainText('Compra registrada')
     await page.getByRole('button', { name: 'Mercado histórico', exact: true }).click()
 
     const precoDoAtivo = page.getByRole('combobox', { name: 'Ativo', exact: true })

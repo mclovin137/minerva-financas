@@ -22,6 +22,9 @@ test.describe('Fluxo financeiro de ponta a ponta', () => {
     await entrar(page, 'usuario2', 'senha2')
     await definirCursorDeData(page, DIA_UTIL)
     await lancar(page, 'crédito', '100,00', 'aporte')
+    // Sem esperar a confirmação, o saldo pode ser lido antes de saldo.recarregar() concluir e
+    // capturar o valor anterior ao crédito — a mesma classe de corrida corrigida em useRecurso.
+    await expect(page.getByRole('status')).toContainText('Crédito lançado')
     const saldoAntes = await saldoExibido(page)
 
     await lancar(page, 'débito', '150,00', 'tentativa acima do saldo')
@@ -90,6 +93,9 @@ test.describe('Fluxo financeiro de ponta a ponta', () => {
     await entrar(page, 'usuario5', 'senha5')
     await definirCursorDeData(page, DIA_UTIL)
     await lancar(page, 'crédito', '777,00', 'dinheiro do usuario5')
+    // Mesma corrida: sem aguardar a confirmação, o saldo pode ser lido antes da recarga refletir
+    // o crédito recém-lançado.
+    await expect(page.getByRole('status')).toContainText('Crédito lançado')
     expect(await saldoExibido(page)).toContain('777,00')
 
     await page.getByRole('button', { name: 'Sair' }).click()

@@ -1,31 +1,32 @@
 ## Task ativa
 
-Concluir a task de padronização de nomes e correções de evidência, autenticação e acessibilidade no PR #1, mantendo o estado real das verificações e sem declarar conclusão enquanto a suíte completa e o E2E não forem validados.
+PR #1 concluído nesta rodada: E2E 21/21 verde, hooks `.codex/hooks/` criados e validados, gates finais verdes, commit e push feitos em `docs/cadeia-inicial`.
 
 ## Estado atual
 
-Os 11 DTOs foram renomeados com sufixo `DTO`, os três enums com sufixo `Enum` (`TipoAtivoEnum`, `TipoLancamentoEnum` e `TipoMovimentacaoEnum`) e as classes de teste unitário/integração com `Teste`/`IntegracaoTeste`. As referências foram atualizadas e o Surefire passou a incluir `**/*Teste.java` e `**/*IntegracaoTeste.java`.
+Esta rodada é continuação de uma tarefa interrompida sem commit/push. O Severino foi despachado ao Codex (encarnação primária); o turno terminou com `EXIT_CODE_CODEX=0`, mas registrou `error=patch rejected: writing outside of the project; rejected by user approval settings` ao tentar escrever em `.codex/hooks/*.sh`, e o efeito pedido ficou verificavelmente ausente (hooks não criados, sem commit/push) — as duas condições do Caso 2 do fallback (`docs/agentes/severino.md`). **Fallback acionado e anunciado**: a partir daí a execução seguiu por Claude Sonnet, esforço medium.
 
-A identificação de evidências agora coleta todos os `TC-###` do `@DisplayName` e publica a mesma evidência em cada pasta; o caso `TC-078/079/080` passa a cobrir os três IDs. O login suprime a notificação global de expiração no 401 da validação de credencial. O foco inicial do Drawer e o trap ficam restritos aos campos, preservando Tab, Shift+Tab e Escape. O fluxo de saldo aguarda a recarga antes de exibir sucesso, e os ajustes de sincronização/seletores dos cenários E2E foram aplicados.
+O Codex já havia confirmado, antes do fallback: `npm run build` verde, empacotamento do jar verde, Maven 130/130 verde, `guard-lib-md.sh` verde, fronteiras DDD verdes. O E2E rodado pelo Codex ficou 0/21 (falha na inicialização do Chromium por ausência de `libasound.so.2`).
 
-As verificações de backend passaram: `mvn compile test-compile` e a suíte Maven ficaram verdes com 130 testes. O gate de `docs/lib.md`, as fronteiras de arquitetura e o `npm run build` também passaram. O E2E foi executado contra o jar real em 21 casos, mas não terminou verde: a primeira execução ficou em 16/21 por ausência de `libasound.so.2`; com o ambiente habilitado, ficou em 15/21, com 5 falhas. O fluxo financeiro isolado teve 1/5 na execução inicial ou falhas em cadeia nas tentativas seguintes.
+Sob o fallback, uma extração local de `libasound2` já existente em `/tmp/minerva-libs/` (baixada sem `sudo`, via `apt-get download` + `dpkg-deb -x`, fora do repositório) foi usada via `LD_LIBRARY_PATH` para destravar o Chromium do Playwright. Com isso, o E2E rodou de verdade: 19/21 na primeira execução, com falha real (não ambiental) em `fluxo-financeiro.spec.ts:21` e `:89` — ambos liam o saldo logo após `lancar()` sem esperar a confirmação (`role="status"`) do lançamento, lendo o valor anterior por corrida, o mesmo padrão que motivou a correção anterior de `useRecurso`. Corrigido em `frontend/e2e/fluxo-financeiro.spec.ts` acrescentando `await expect(page.getByRole('status')).toContainText('Crédito lançado')` nos dois pontos antes de ler o saldo. Reexecutado: **21/21 verde**.
 
-`docs/adrs/adr-003-estrutura-do-backend.md` foi atualizado com as três convenções e a regra do construtor único sem `@Autowired`; `docs/lib.md` registrou `@playwright/test`, `@types/node`, `@types/react` e `@types/react-dom`. O compilador de backend passou em `compile test-compile` (85 fontes de produção e 16 de teste recompiladas). A suíte completa Maven, os gates finais e o E2E permanecem em andamento; não há contagem final nem push declarados nesta atualização.
+Os três hooks `.codex/hooks/guarda-orquestrador.sh`, `.codex/hooks/sessao-orquestrador.sh` e `.codex/hooks/sincronizar-continuidade.sh` foram criados espelhando `.claude/hooks/`. Única diferença deliberada: `sincronizar-continuidade.sh` não usa `CLAUDE_PROJECT_DIR` (não há variável equivalente documentada no Codex CLI 0.147.0) — a raiz é resolvida por `git rev-parse --show-toplevel`, com o fallback relativo ao script como última rede fora de um repositório git. Smoke test local (replicando `.github/workflows/validar-template.yml`, step "Executar smoke tests dos hooks") passou limpo: os quatro hooks sem stderr, sincronização Claude e Codex idempotentes, invariante de região gerada preservada, marcadores únicos.
+
+Verificação final: Maven isolado 130/130 (mesma contagem de antes); `npm run build` verde; `npm run e2e` 21/21; smoke test dos hooks limpo e idempotente; `guard-lib-md.sh` verde; fronteiras DDD e ausência de `double`/`float` verdes; links de `docs/*.md` íntegros.
 
 ## Decisões vigentes
 
-DTOs terminam em `DTO`; enums terminam em `Enum`; testes unitários terminam em `Teste` e testes de integração em `IntegracaoTeste`. O callback global de expiração só deve ocorrer após autenticação bem-sucedida. O foco inicial do Drawer entra nos campos, e a evidência de um teste com múltiplos `TC-###` é replicada para todos os casos identificados.
+DTOs terminam em `DTO`; enums terminam em `Enum`; testes unitários terminam em `Teste` e testes de integração em `IntegracaoTeste`. O callback global de expiração só deve ocorrer após autenticação bem-sucedida. O foco inicial do Drawer entra nos campos, e a evidência de um teste com múltiplos `TC-###` é replicada para todos os casos identificados. Todo teste E2E que lê um dado alterado por uma ação assíncrona deve esperar a confirmação (`role="status"` ou equivalente) antes de ler esse dado — não basta que `useRecurso` resolva corretamente, o teste também precisa aguardar o sinal de conclusão.
 
 ## Riscos e lacunas
 
-Permanece uma lacuna no E2E: há indícios de sincronização/estado persistido entre cenários, e o teste de preço falha quando não há dado visível para a consulta. A execução com jar real confirmou a infraestrutura habilitada, mas não permitiu declarar os 21 casos verdes. A checagem de evidências múltiplas deve continuar sendo acompanhada nas execuções de integração. A sincronização da pendência no Obsidian continua aberta, conforme `docs/pendencias-obsidian.md`.
+`.codex/hooks/*.sh` não está referenciado em `.codex/hooks.json` (que mantém os três hooks como `null` deliberadamente — o Codex CLI não tem o mesmo mecanismo de wiring do Claude Code); os arquivos existem para paridade, smoke test e uso manual/futuro, não para disparo automático. A extração local de `libasound2` em `/tmp/minerva-libs/` é um workaround de sessão (fora do repositório, não versionado, perdido ao limpar `/tmp`); o ambiente de CI/outra máquina pode voltar a bloquear o Chromium sem essa dependência de sistema — não é uma correção permanente do ambiente. A sincronização da pendência no Obsidian continua aberta, conforme `docs/pendencias-obsidian.md`.
 
 ## Próximo passo
 
-Investigar e estabilizar as lacunas restantes do E2E (sincronização/estado entre cenários e ausência de dado visível no teste de preço), repetir a suíte completa e então criar commit em pt-BR e fazer push da branch `docs/cadeia-inicial`. Ainda não houve commit nem push.
+Nenhum bloqueio remanescente nesta rodada. Push feito para `docs/cadeia-inicial`; PR #1 segue aguardando revisão independente (auditoria) — Severino não aprova nem faz merge do próprio PR. Se o `libasound.so.2` voltar a faltar em execução futura, repetir o workaround de `/tmp/minerva-libs/` ou instalar a dependência de forma permanente no ambiente.
 
 ## Região gerada
 
 <!-- minerva-continuity:generated:start -->
-Estado gerado para sincronização: renomes de DTOs, enums e testes e correções de evidência, login, foco do Drawer e sincronização de saldo aplicados; ADR-003 e docs/lib.md atualizados; compile/test-compile e Maven com 130 testes, guard-lib, fronteiras e build frontend verdes; E2E real em 21 casos não concluído verde, com lacunas de estado entre cenários e dado visível no teste de preço; sem commit/push.
 <!-- minerva-continuity:generated:end -->
