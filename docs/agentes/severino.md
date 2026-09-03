@@ -22,13 +22,13 @@ Severino é responsável por todo o código da aplicação: back-end, front-end,
 | Encarnação primária | Codex — `gpt-5.6-luna` |
 | Encarnação alternativa | Claude — Sonnet, esforço medium (fallback anunciado; ver `## Como é executado`) |
 | Esforço | medium (`-c model_reasoning_effort=medium` no Codex; `effort: medium` no fallback Claude) |
-| Sandbox | `workspace-write` com duas raízes graváveis extras (`<repo>/.git` e a base Obsidian `Bases/Minerva`) e isolamento de rede desligado — custo nomeado em `## Como é executado` |
+| Sandbox | `workspace-write` com três raízes graváveis extras (`<repo>/.git`, a base Obsidian `Bases/Minerva` e a base `Bases/Minerva Financas`) e isolamento de rede desligado — custo nomeado em `## Como é executado` |
 
 **Por quê:** implementação chega com escopo fechado pela task e arquitetura já decidida pelo Yoda — o trabalho é executar bem o que já foi resolvido, não resolver de novo.
 
 **Por quê o sandbox tem raízes extras:** são três liberações deliberadas, cada uma com preço. A justificativa de cada uma, o custo aceito e o que permanece protegido estão em `## Como é executado`, ao lado do comando que as aplica; este resumo não substitui aquela leitura.
 
-A liberação do Obsidian é exclusiva do caminho `/mnt/c/Users/mclov/OneDrive/Documentos/Obsidian Vault/mclov/Documents/SecondBrain/Bases/Minerva` — não o vault inteiro, não `SecondBrain`, não `Bases` (a pasta irmã `Bases/Freya` pertence a outro projeto e permanece inacessível). O modo de sandbox continua `workspace-write` e não há flag de bypass total — mas **duas proteções que esse modo dá por padrão foram desligadas de propósito**, por decisão explícita do usuário, com o custo nomeado por escrito.
+A liberação do Obsidian é exclusiva dos caminhos `/mnt/c/Users/mclov/OneDrive/Documentos/Obsidian Vault/mclov/Documents/SecondBrain/Bases/Minerva` e `/mnt/c/Users/mclov/OneDrive/Documentos/Obsidian Vault/mclov/Documents/SecondBrain/Bases/Minerva Financas` — não o vault inteiro, não `SecondBrain`, não `Bases` (a pasta irmã `Bases/Freya` pertence a outro projeto e permanece inacessível). O modo de sandbox continua `workspace-write` e não há flag de bypass total — mas **duas proteções que esse modo dá por padrão foram desligadas de propósito**, por decisão explícita do usuário, com o custo nomeado por escrito.
 
 Severino tem **encarnação primária no Codex e fallback declarado para Claude Sonnet com esforço medium**, por decisão explícita do usuário. O fallback dispara em dois casos, e só neles: falha de chamada, ou falha material dentro do turno com código de saída zero. A definição fechada dos dois está em `## Como é executado`; fora deles, trocar de encarnação é proibido.
 
@@ -56,7 +56,7 @@ saida="$repo_root/.validacao/severino-codex.out"
 mkdir -p "$(dirname "$saida")"
 {
   codex exec -m gpt-5.6-luna -c model_reasoning_effort=medium -s workspace-write \
-    -c "sandbox_workspace_write.writable_roots=[\"$repo_root/.git\",\"/mnt/c/Users/mclov/OneDrive/Documentos/Obsidian Vault/mclov/Documents/SecondBrain/Bases/Minerva\"]" \
+    -c "sandbox_workspace_write.writable_roots=[\"$repo_root/.git\",\"/mnt/c/Users/mclov/OneDrive/Documentos/Obsidian Vault/mclov/Documents/SecondBrain/Bases/Minerva\",\"/mnt/c/Users/mclov/OneDrive/Documentos/Obsidian Vault/mclov/Documents/SecondBrain/Bases/Minerva Financas\"]" \
     -c 'sandbox_workspace_write.network_access=true' \
     "$demanda"
   printf '\nEXIT_CODE_CODEX=%s\n' "$?"
@@ -71,7 +71,8 @@ Se o repositório ainda não estiver inicializado, `git rev-parse --show-topleve
 chamador deve resolver a raiz por outra forma antes de executar o restante do comando.
 
 Lançar em background muda somente a forma de aguardar a conclusão; **nenhuma flag do comando muda**.
-O modo `workspace-write`, as duas raízes graváveis extras (`<repo>/.git` e `Bases/Minerva`) e
+O modo `workspace-write`, as três raízes graváveis extras (`<repo>/.git`, `Bases/Minerva` e
+`Bases/Minerva Financas`) e
 `network_access=true` permanecem exatamente na postura do PR #32. Não ampliar nem reduzir qualquer
 liberação, e não introduzir flag de bypass.
 
@@ -90,6 +91,7 @@ DrvFs/WSL, espaços no caminho e a hipótese de que `writable_roots` substituiri
 | Liberação | Por que existe | Custo aceito, nomeado |
 |---|---|---|
 | `Bases/Minerva` gravável | a regra de ferro 3 exige registrar a pendência documental e sincronizar a base Obsidian em até 24 h, ou antes por pedido do usuário, e a base fica fora do repositório | escrita fora do repositório, restrita a um caminho; o diff do PR não prova essa escrita |
+| `Bases/Minerva Financas` gravável | o desafio MAPS agora tem base Obsidian própria, separada do template, por decisão do usuário registrada nesta sessão | escrita fora do repositório, restrita a um caminho específico; o diff do PR não prova essa escrita |
 | `<repo>/.git` gravável | sem ela nenhuma mutação de git acontece dentro da sandbox: o agente que implementa não consegue commitar, e todo o contrato de entrega por branch e PR fica impossível | **`.git/hooks/` passa a ser gravável.** Um hook git executa **no host, fora da sandbox**, na próxima operação git de qualquer ator — sem passar por PR, sem revisão, sem aparecer em diff. É a superfície mais séria criada por esta mudança |
 | `network_access=true` | `git fetch`, `git push` e resolução de nome não funcionam sob o isolamento de rede do `workspace-write` | o isolamento de rede cai para **o turno inteiro**, não só para o `git`. Combinado com `.git/hooks/` gravável e leitura do repositório, é superfície de exfiltração real |
 
