@@ -20,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * consultada continua retida até expirar, e o limite de execuções por usuário é justamente o que
  * este arquivo testa — casos compartilhando um login se envenenariam mutuamente com 429.
  */
-class PosicaoAssincronaIT extends TesteIntegracao {
+class PosicaoAssincronaIntegracaoTeste extends TesteIntegracao {
 
     private static final String DIA = "2020-02-28";
 

@@ -7,10 +7,10 @@ import br.com.minerva.financas.ativo.actor.DefinirPrecoActor;
 import br.com.minerva.financas.ativo.actor.ListarAtivosActor;
 import br.com.minerva.financas.ativo.actor.RemoverAtivoActor;
 import br.com.minerva.financas.ativo.actor.RemoverPrecoActor;
-import br.com.minerva.financas.ativo.dto.AtivoRequisicao;
-import br.com.minerva.financas.ativo.dto.AtivoResposta;
-import br.com.minerva.financas.ativo.dto.PrecoRequisicao;
-import br.com.minerva.financas.ativo.dto.PrecoResposta;
+import br.com.minerva.financas.ativo.dto.AtivoRequisicaoDTO;
+import br.com.minerva.financas.ativo.dto.AtivoRespostaDTO;
+import br.com.minerva.financas.ativo.dto.PrecoRequisicaoDTO;
+import br.com.minerva.financas.ativo.dto.PrecoRespostaDTO;
 import br.com.minerva.financas.comum.helper.Requisicoes;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -53,23 +53,23 @@ class AtivoController {
     }
 
     @GetMapping
-    List<AtivoResposta> listar() {
+    List<AtivoRespostaDTO> listar() {
         return listar.executar();
     }
 
     @GetMapping("/{codigo}")
-    AtivoResposta consultar(@PathVariable String codigo) {
+    AtivoRespostaDTO consultar(@PathVariable String codigo) {
         return consultar.executar(codigo);
     }
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
-    void criar(@RequestBody(required = false) AtivoRequisicao requisicao) {
+    void criar(@RequestBody(required = false) AtivoRequisicaoDTO requisicao) {
         criar.executar(requisicao);
     }
 
     @PutMapping(path = "/{codigo}", consumes = MediaType.APPLICATION_JSON_VALUE)
-    AtivoResposta atualizar(@PathVariable String codigo, @RequestBody(required = false) AtivoRequisicao requisicao) {
+    AtivoRespostaDTO atualizar(@PathVariable String codigo, @RequestBody(required = false) AtivoRequisicaoDTO requisicao) {
         return atualizar.executar(codigo, requisicao);
     }
 
@@ -80,8 +80,8 @@ class AtivoController {
     }
 
     @PutMapping(path = "/{codigo}/precos/{data}", consumes = MediaType.APPLICATION_JSON_VALUE)
-    ResponseEntity<PrecoResposta> definirPreco(@PathVariable String codigo, @PathVariable String data,
-                                                @RequestBody(required = false) PrecoRequisicao requisicao) {
+    ResponseEntity<PrecoRespostaDTO> definirPreco(@PathVariable String codigo, @PathVariable String data,
+                                                @RequestBody(required = false) PrecoRequisicaoDTO requisicao) {
         if (requisicao == null) {
             throw new br.com.minerva.financas.comum.dominio.ErroAplicacao(
                     "REQUISICAO_INVALIDA", 400, "O corpo da requisição é obrigatório.");

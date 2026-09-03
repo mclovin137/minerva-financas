@@ -24,6 +24,9 @@ export async function irPara(pagina: Page, destino: string) {
 export async function saldoExibido(pagina: Page): Promise<string> {
   const indicador = pagina.locator('.indicador.destaque .valor')
   await expect(indicador).toBeVisible()
+  // O indicador permanece visível durante a recarga; aguardar apenas visibilidade pode ler o
+  // placeholder antes de saldo.recarregar() concluir.
+  await expect(indicador).not.toHaveText('…')
   return (await indicador.innerText()).trim()
 }
 

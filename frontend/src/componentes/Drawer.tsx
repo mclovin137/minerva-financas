@@ -21,14 +21,15 @@ export function Drawer({
   rodape: ReactNode
 }) {
   const painel = useRef<HTMLDivElement>(null)
+  const campos = useRef<HTMLDivElement>(null)
   const focoAnterior = useRef<HTMLElement | null>(null)
 
   useEffect(() => {
     if (!aberto) return
     focoAnterior.current = document.activeElement as HTMLElement | null
 
-    const focaveis = painel.current?.querySelectorAll<HTMLElement>(
-      'input, select, textarea, button, [href], [tabindex]:not([tabindex="-1"])',
+    const focaveis = campos.current?.querySelectorAll<HTMLElement>(
+      'input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), [href], [tabindex]:not([tabindex="-1"])',
     )
     focaveis?.[0]?.focus()
 
@@ -40,7 +41,7 @@ export function Drawer({
       if (evento.key !== 'Tab') return
 
       const lista = painel.current?.querySelectorAll<HTMLElement>(
-        'input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), [href]',
+        'input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]):not([aria-label="Fechar"]), [href], [tabindex]:not([tabindex="-1"])',
       )
       if (!lista || lista.length === 0) return
       const primeiro = lista[0]
@@ -78,7 +79,7 @@ export function Drawer({
             ✕
           </button>
         </header>
-        <div className="campos">{children}</div>
+        <div className="campos" ref={campos}>{children}</div>
         <footer>{rodape}</footer>
       </div>
     </div>

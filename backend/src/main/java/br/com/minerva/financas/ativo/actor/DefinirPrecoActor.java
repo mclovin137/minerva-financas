@@ -1,7 +1,7 @@
 package br.com.minerva.financas.ativo.actor;
 
 import br.com.minerva.financas.ativo.builder.AtivoBuilder;
-import br.com.minerva.financas.ativo.dto.PrecoResposta;
+import br.com.minerva.financas.ativo.dto.PrecoRespostaDTO;
 import br.com.minerva.financas.ativo.service.AtivoService;
 import org.springframework.stereotype.Component;
 
@@ -22,6 +22,6 @@ public class DefinirPrecoActor {
         return new Resultado(AtivoBuilder.respostaDePreco(codigo, data, precoE8), criado);
     }
 
-    public record Resultado(PrecoResposta resposta, boolean criado) {
+    public record Resultado(PrecoRespostaDTO resposta, boolean criado) {
     }
 }

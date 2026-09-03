@@ -4,8 +4,8 @@ import br.com.minerva.financas.comum.helper.Requisicoes;
 import br.com.minerva.financas.movimentacao.actor.IMovimentacaoActor;
 import br.com.minerva.financas.movimentacao.actor.ListarMovimentacoesActor;
 import br.com.minerva.financas.movimentacao.actor.MovimentacaoActorFactory;
-import br.com.minerva.financas.movimentacao.dto.MovimentacaoRequisicao;
-import br.com.minerva.financas.movimentacao.dto.MovimentacaoResposta;
+import br.com.minerva.financas.movimentacao.dto.MovimentacaoRequisicaoDTO;
+import br.com.minerva.financas.movimentacao.dto.MovimentacaoRespostaDTO;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -33,24 +33,24 @@ class MovimentacaoController {
 
     @PostMapping(path = "/compra", consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
-    void comprar(@RequestBody(required = false) MovimentacaoRequisicao requisicao) {
+    void comprar(@RequestBody(required = false) MovimentacaoRequisicaoDTO requisicao) {
         executar(fabrica.compra(), requisicao);
     }
 
     @PostMapping(path = "/venda", consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
-    void vender(@RequestBody(required = false) MovimentacaoRequisicao requisicao) {
+    void vender(@RequestBody(required = false) MovimentacaoRequisicaoDTO requisicao) {
         executar(fabrica.venda(), requisicao);
     }
 
     @GetMapping
-    List<MovimentacaoResposta> listar(@RequestParam(name = "dataInicio", required = false) String inicio,
+    List<MovimentacaoRespostaDTO> listar(@RequestParam(name = "dataInicio", required = false) String inicio,
                                    @RequestParam(name = "dataFim", required = false) String fim) {
         var intervalo = Requisicoes.intervalo(inicio, fim);
         return listar.executar(intervalo.inicio(), intervalo.fim());
     }
 
-    private static void executar(IMovimentacaoActor actor, MovimentacaoRequisicao requisicao) {
+    private static void executar(IMovimentacaoActor actor, MovimentacaoRequisicaoDTO requisicao) {
         if (requisicao == null) {
             throw new br.com.minerva.financas.comum.dominio.ErroAplicacao(
                     "REQUISICAO_INVALIDA", 400, "O corpo da requisição é obrigatório.");

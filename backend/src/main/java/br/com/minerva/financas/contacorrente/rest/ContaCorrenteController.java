@@ -5,10 +5,10 @@ import br.com.minerva.financas.comum.helper.Requisicoes;
 import br.com.minerva.financas.contacorrente.actor.ConsultarSaldoActor;
 import br.com.minerva.financas.contacorrente.actor.LancamentoActorFactory;
 import br.com.minerva.financas.contacorrente.actor.ListarLancamentosActor;
-import br.com.minerva.financas.contacorrente.dominio.TipoLancamento;
-import br.com.minerva.financas.contacorrente.dto.LancamentoRequisicao;
-import br.com.minerva.financas.contacorrente.dto.LancamentoResposta;
-import br.com.minerva.financas.contacorrente.dto.SaldoResposta;
+import br.com.minerva.financas.contacorrente.dominio.TipoLancamentoEnum;
+import br.com.minerva.financas.contacorrente.dto.LancamentoRequisicaoDTO;
+import br.com.minerva.financas.contacorrente.dto.LancamentoRespostaDTO;
+import br.com.minerva.financas.contacorrente.dto.SaldoRespostaDTO;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -40,18 +40,18 @@ class ContaCorrenteController {
 
     @PostMapping(path = "/credito", consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
-    void credito(@RequestBody(required = false) LancamentoRequisicao requisicao) {
-        lancar(TipoLancamento.CREDITO, requisicao);
+    void credito(@RequestBody(required = false) LancamentoRequisicaoDTO requisicao) {
+        lancar(TipoLancamentoEnum.CREDITO, requisicao);
     }
 
     @PostMapping(path = "/debito", consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
-    void debito(@RequestBody(required = false) LancamentoRequisicao requisicao) {
-        lancar(TipoLancamento.DEBITO, requisicao);
+    void debito(@RequestBody(required = false) LancamentoRequisicaoDTO requisicao) {
+        lancar(TipoLancamentoEnum.DEBITO, requisicao);
     }
 
-    private void lancar(TipoLancamento tipo, LancamentoRequisicao requisicao) {
-        LancamentoRequisicao r = corpoObrigatorio(requisicao);
+    private void lancar(TipoLancamentoEnum tipo, LancamentoRequisicaoDTO requisicao) {
+        LancamentoRequisicaoDTO r = corpoObrigatorio(requisicao);
         fabrica.criar(tipo).executar(
                 Requisicoes.escalado(r.valor(), "valor", 2, true),
                 Requisicoes.texto(r.descricao(), "descricao"),
@@ -59,19 +59,19 @@ class ContaCorrenteController {
     }
 
     @GetMapping("/saldo")
-    SaldoResposta saldo(@RequestParam(name = "data", required = false) String data) {
+    SaldoRespostaDTO saldo(@RequestParam(name = "data", required = false) String data) {
         long centavos = consultarSaldo.executar(Requisicoes.filtroDeData(data, "data"));
-        return new SaldoResposta(BigDecimal.valueOf(centavos, 2));
+        return new SaldoRespostaDTO(BigDecimal.valueOf(centavos, 2));
     }
 
     @GetMapping("/lancamentos")
-    List<LancamentoResposta> lancamentos(@RequestParam(name = "dataInicio", required = false) String dataInicio,
+    List<LancamentoRespostaDTO> lancamentos(@RequestParam(name = "dataInicio", required = false) String dataInicio,
                                          @RequestParam(name = "dataFim", required = false) String dataFim) {
         Requisicoes.Intervalo intervalo = Requisicoes.intervalo(dataInicio, dataFim);
         return listarLancamentos.executar(intervalo.inicio(), intervalo.fim());
     }
 
-    private static LancamentoRequisicao corpoObrigatorio(LancamentoRequisicao requisicao) {
+    private static LancamentoRequisicaoDTO corpoObrigatorio(LancamentoRequisicaoDTO requisicao) {
         if (requisicao == null) {
             throw new ErroAplicacao("REQUISICAO_INVALIDA", 400, "O corpo da requisição é obrigatório.");
         }

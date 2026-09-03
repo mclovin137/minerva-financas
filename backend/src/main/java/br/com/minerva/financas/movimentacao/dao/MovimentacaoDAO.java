@@ -3,7 +3,7 @@ package br.com.minerva.financas.movimentacao.dao;
 import br.com.minerva.financas.comum.dominio.Dinheiro;
 import br.com.minerva.financas.comum.dominio.Quantidade;
 import br.com.minerva.financas.movimentacao.dominio.Movimentacao;
-import br.com.minerva.financas.movimentacao.dominio.TipoMovimentacao;
+import br.com.minerva.financas.movimentacao.dominio.TipoMovimentacaoEnum;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
@@ -23,7 +23,7 @@ public class MovimentacaoDAO implements IMovimentacaoDAO {
     private final JdbcTemplate banco;
     private final RowMapper<Movimentacao> mapeador = (rs, linha) -> new Movimentacao(
             rs.getLong("id"), rs.getString("codigo"), LocalDate.parse(rs.getString("data")),
-            TipoMovimentacao.valueOf(rs.getString("tipo")),
+            TipoMovimentacaoEnum.valueOf(rs.getString("tipo")),
             new Quantidade(rs.getLong("quantidade_e2")),
             Dinheiro.deCentavos(rs.getLong("valor_centavos")));
 
@@ -32,7 +32,7 @@ public class MovimentacaoDAO implements IMovimentacaoDAO {
     }
 
     @Override
-    public void inserir(long usuario, String codigo, LocalDate data, TipoMovimentacao tipo,
+    public void inserir(long usuario, String codigo, LocalDate data, TipoMovimentacaoEnum tipo,
                         long quantidadeE2, long valorCentavos) {
         Long ativo = banco.queryForObject("SELECT id FROM ativo WHERE codigo = ?", Long.class, codigo);
         if (ativo == null) {

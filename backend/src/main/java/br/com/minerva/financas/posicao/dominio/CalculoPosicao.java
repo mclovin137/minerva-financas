@@ -4,7 +4,7 @@ import br.com.minerva.financas.comum.dominio.Dinheiro;
 import br.com.minerva.financas.comum.dominio.PrecoUnitario;
 import br.com.minerva.financas.comum.dominio.Quantidade;
 import br.com.minerva.financas.movimentacao.dominio.Movimentacao;
-import br.com.minerva.financas.movimentacao.dominio.TipoMovimentacao;
+import br.com.minerva.financas.movimentacao.dominio.TipoMovimentacaoEnum;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -78,8 +78,8 @@ public final class CalculoPosicao {
             }
         }
 
-        public void acumular(TipoMovimentacao tipo, long quantidadeE2, long valorCentavos) {
-            if (tipo == TipoMovimentacao.COMPRA) {
+        public void acumular(TipoMovimentacaoEnum tipo, long quantidadeE2, long valorCentavos) {
+            if (tipo == TipoMovimentacaoEnum.COMPRA) {
                 this.quantidadeE2 = Math.addExact(this.quantidadeE2, quantidadeE2);
                 this.comprasQuantidadeE2 = Math.addExact(this.comprasQuantidadeE2, quantidadeE2);
                 this.comprasCentavos = Math.addExact(this.comprasCentavos, valorCentavos);

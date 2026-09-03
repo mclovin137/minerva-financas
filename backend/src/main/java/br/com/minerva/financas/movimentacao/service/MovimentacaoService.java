@@ -7,7 +7,7 @@ import br.com.minerva.financas.comum.dominio.ErroAplicacao;
 import br.com.minerva.financas.contacorrente.dao.IContaCorrenteDAO;
 import br.com.minerva.financas.movimentacao.dao.IMovimentacaoDAO;
 import br.com.minerva.financas.movimentacao.dominio.Movimentacao;
-import br.com.minerva.financas.movimentacao.dominio.TipoMovimentacao;
+import br.com.minerva.financas.movimentacao.dominio.TipoMovimentacaoEnum;
 import br.com.minerva.financas.usuario.dao.IUsuarioDAO;
 import br.com.minerva.financas.usuario.dominio.IProprietarioAtual;
 import br.com.minerva.financas.usuario.helper.Capacidades;
@@ -38,12 +38,12 @@ public class MovimentacaoService {
 
     @Transactional
     public void comprar(String codigo, LocalDate data, long quantidadeE2, long valorCentavos) {
-        executar(codigo, data, quantidadeE2, valorCentavos, TipoMovimentacao.COMPRA);
+        executar(codigo, data, quantidadeE2, valorCentavos, TipoMovimentacaoEnum.COMPRA);
     }
 
     @Transactional
     public void vender(String codigo, LocalDate data, long quantidadeE2, long valorCentavos) {
-        executar(codigo, data, quantidadeE2, valorCentavos, TipoMovimentacao.VENDA);
+        executar(codigo, data, quantidadeE2, valorCentavos, TipoMovimentacaoEnum.VENDA);
     }
 
     public List<Movimentacao> listar(LocalDate inicio, LocalDate fim) {
@@ -52,7 +52,7 @@ public class MovimentacaoService {
     }
 
     private void executar(String codigo, LocalDate data, long quantidadeE2, long valorCentavos,
-                          TipoMovimentacao tipo) {
+                          TipoMovimentacaoEnum tipo) {
         Capacidades.exigirUsuarioComum(proprietario);
         Ativo ativo = ativos.ativo(codigo).orElseThrow(MovimentacaoService::ativoNaoEncontrado);
         if (!CalendarioNegociacao.ehDiaUtil(data)) {
@@ -65,19 +65,19 @@ public class MovimentacaoService {
                             + "até o vencimento, exclusive.");
         }
         long usuario = usuario();
-        if (tipo == TipoMovimentacao.COMPRA && !conta.saldoFuturoValido(usuario, data, -valorCentavos)) {
+        if (tipo == TipoMovimentacaoEnum.COMPRA && !conta.saldoFuturoValido(usuario, data, -valorCentavos)) {
             throw new ErroAplicacao("SALDO_INSUFICIENTE", 409,
                     "O saldo ficaria negativo em alguma data a partir da data informada.");
         }
-        if (tipo == TipoMovimentacao.VENDA
+        if (tipo == TipoMovimentacaoEnum.VENDA
                 && !movimentacoes.quantidadeFuturaValida(usuario, codigo, data, -quantidadeE2)) {
             throw new ErroAplicacao("QUANTIDADE_INSUFICIENTE", 409,
                     "A quantidade do ativo ficaria negativa em alguma data a partir da data informada.");
         }
         movimentacoes.inserir(usuario, codigo, data, tipo, quantidadeE2, valorCentavos);
-        long deltaSaldo = tipo == TipoMovimentacao.COMPRA ? -valorCentavos : valorCentavos;
+        long deltaSaldo = tipo == TipoMovimentacaoEnum.COMPRA ? -valorCentavos : valorCentavos;
         conta.inserirLancamento(usuario, data, deltaSaldo,
-                (tipo == TipoMovimentacao.COMPRA ? "Compra " : "Venda ") + ativo.codigo());
+                (tipo == TipoMovimentacaoEnum.COMPRA ? "Compra " : "Venda ") + ativo.codigo());
     }
 
     private long usuario() {

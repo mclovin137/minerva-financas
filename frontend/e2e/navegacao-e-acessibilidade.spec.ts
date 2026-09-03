@@ -33,11 +33,16 @@ test.describe('Navegação, cursor de data e acessibilidade', () => {
 
   test('o drawer prende o foco, fecha no Esc e devolve o foco a quem o abriu', async ({ page }) => {
     await entrar(page, 'usuario0', 'senha0')
-    const abrir = page.getByRole('button', { name: 'Novo crédito' })
+    const abrir = page.locator('header').getByRole('button', { name: 'Novo crédito', exact: true })
     await abrir.click()
 
     const painel = page.getByRole('dialog')
     await expect(painel).toBeVisible()
+    await expect(painel.getByLabel('Valor (R$)')).toBeFocused()
+
+    await page.keyboard.press('Shift+Tab')
+    await expect(painel.getByRole('button', { name: 'Lançar crédito' })).toBeFocused()
+    await page.keyboard.press('Tab')
     await expect(painel.getByLabel('Valor (R$)')).toBeFocused()
 
     await page.keyboard.press('Escape')

@@ -20,7 +20,7 @@ export function Entrada({ aoEntrar }: { aoEntrar: (login: string) => void }) {
     definirCredencial(login, senha)
 
     try {
-      await api.ativos()
+      await api.ativos({ notificarExpiracao: false })
       aoEntrar(login)
     } catch (falha) {
       limparCredencial()

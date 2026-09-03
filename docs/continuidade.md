@@ -1,36 +1,31 @@
 ## Task ativa
 
-Consolidar a entrega dos níveis 1-3 do desafio MAPS (opções A e B) sobre a estrutura ADR-003, incluindo a correção do contrato da opção B (posição assíncrona diretamente em `/posicao` e `/posicao/{id}`, removendo `/posicao/assinc`), a limpeza de código morto associada (`ConsultarPosicaoActor`, `PosicaoService`, `PosicaoActorFactory.sincrono()`), e abrir o PR de `docs/cadeia-inicial` para `main`, com o deploy em nuvem explicitamente adiado por decisão do usuário.
+Concluir a task de padronização de nomes e correções de evidência, autenticação e acessibilidade no PR #1, mantendo o estado real das verificações e sem declarar conclusão enquanto a suíte completa e o E2E não forem validados.
 
 ## Estado atual
 
-Implementação, testes e auditorias concluídos nesta sessão; commit, push e abertura de PR feitos agora, por decisão explícita do usuário de fechar esta entrega sem aguardar o deploy em nuvem. O controller público único (`PosicaoController`) inicia execuções em `GET /posicao?data=...` com 202, entrega resultado em `GET /posicao/{id}` com 425/200 e descarta a execução após a entrega. O frontend faz polling (`consultarPosicao` em `frontend/src/api/cliente.ts`) com estado de carregamento nas telas que consomem posição. Testes de posição, segurança e filtros de data foram adaptados ao novo contrato.
+Os 11 DTOs foram renomeados com sufixo `DTO`, os três enums com sufixo `Enum` (`TipoAtivoEnum`, `TipoLancamentoEnum` e `TipoMovimentacaoEnum`) e as classes de teste unitário/integração com `Teste`/`IntegracaoTeste`. As referências foram atualizadas e o Surefire passou a incluir `**/*Teste.java` e `**/*IntegracaoTeste.java`.
 
-Nesta limpeza subsequente, confirmou-se que `ConsultarPosicaoActor` e `PosicaoService` não tinham nenhum chamador real (nem produção, nem teste) além de si mesmos — eram código morto remanescente da migração, não um caso de uso interno intencional. Ambas as classes foram removidas, junto com o método `sincrono()` e o campo `ConsultarPosicaoActor` de `PosicaoActorFactory`, cujo construtor passou a receber apenas `SolicitarPosicaoAssincronaActor` e `ConsultarPosicaoAssincronaActor`. `PosicaoBuilder` e `PosicaoResposta` foram conferidos e permanecem em uso vivo por `ConsultarPosicaoAssincronaActor`, portanto não são órfãos e não foram tocados.
+A identificação de evidências agora coleta todos os `TC-###` do `@DisplayName` e publica a mesma evidência em cada pasta; o caso `TC-078/079/080` passa a cobrir os três IDs. O login suprime a notificação global de expiração no 401 da validação de credencial. O foco inicial do Drawer e o trap ficam restritos aos campos, preservando Tab, Shift+Tab e Escape. O fluxo de saldo aguarda a recarga antes de exibir sucesso, e os ajustes de sincronização/seletores dos cenários E2E foram aplicados.
 
-Evidências executadas de fato nesta sessão:
-- `./mvnw -f backend/pom.xml test`: BUILD SUCCESS, 126 testes, 0 falhas, 0 erros (125 antes de acrescentar o teste explícito do achado não bloqueante b; +1 depois; a remoção do código morto não alterou a contagem).
-- `npm run build` em `frontend/`: TypeScript (`tsc -b`) e Vite verdes.
-- TC-078/079/080 (`PosicaoDesempenhoIT`): 200.000 movimentações processadas, variação de heap de 14,6 MB (limite 64 MB), 4 threads de agregação.
-- Busca no código não encontrou `/posicao/assinc` nem `PosicaoAssincronaController.java` em fontes versionadas (apenas em `backend/target/`, artefato de build).
-- Gate manual de continuidade (`.github/scripts/verificar-continuidade.py`) reprovou o formato anterior deste arquivo (seção `## Evidências` fora do conjunto declarado e ausência de `## Região gerada`); corrigido e reexecutado com `APROVADO`.
-- Gate manual de fronteiras (greps equivalentes a `.github/workflows/review.yml`: direção de dependência, ausência de pacote legado, prefixo `I` em interface, ausência de `double`/`float`, links relativos de `docs/`, presença de `README.md`) reexecutado após a correção — todos OK.
-- `grep -rn "ConsultarPosicaoActor\|PosicaoService\b" backend/src` após a remoção: sem ocorrências.
+As verificações de backend passaram: `mvn compile test-compile` e a suíte Maven ficaram verdes com 130 testes. O gate de `docs/lib.md`, as fronteiras de arquitetura e o `npm run build` também passaram. O E2E foi executado contra o jar real em 21 casos, mas não terminou verde: a primeira execução ficou em 16/21 por ausência de `libasound.so.2`; com o ambiente habilitado, ficou em 15/21, com 5 falhas. O fluxo financeiro isolado teve 1/5 na execução inicial ou falhas em cadeia nas tentativas seguintes.
+
+`docs/adrs/adr-003-estrutura-do-backend.md` foi atualizado com as três convenções e a regra do construtor único sem `@Autowired`; `docs/lib.md` registrou `@playwright/test`, `@types/node`, `@types/react` e `@types/react-dom`. O compilador de backend passou em `compile test-compile` (85 fontes de produção e 16 de teste recompiladas). A suíte completa Maven, os gates finais e o E2E permanecem em andamento; não há contagem final nem push declarados nesta atualização.
 
 ## Decisões vigentes
 
-Não há mais caminho síncrono de posição, nem exposto via REST nem interno: `ConsultarPosicaoActor` e `PosicaoService` eram código morto e foram removidos nesta limpeza, não uma decisão de desempenho deliberada de manter dois caminhos. O worker assíncrono (`PosicaoAssincronaService`) mantém agregação particionada e streaming próprios, dimensionados para a meta de alto volume — isso segue vigente, mas por não haver mais nenhum caminho síncrono para reaproveitar, não por escolha de não reutilizá-lo. `PosicaoActorFactory` agora expõe apenas `solicitacao()` e `consulta()`. Não há rota pública síncrona nem `/posicao/assinc`.
+DTOs terminam em `DTO`; enums terminam em `Enum`; testes unitários terminam em `Teste` e testes de integração em `IntegracaoTeste`. O callback global de expiração só deve ocorrer após autenticação bem-sucedida. O foco inicial do Drawer entra nos campos, e a evidência de um teste com múltiplos `TC-###` é replicada para todos os casos identificados.
 
 ## Riscos e lacunas
 
-Deploy em nuvem continua `❓ LACUNA`, adiado por decisão explícita do usuário nesta rodada, sem prazo nem plataforma fixados; ver seção Deploy do `README.md`. Permanecem as lacunas de dados exatos do seed MAPS e de estados visuais já documentadas em `docs/design`. A sincronização da cópia canônica no Obsidian segue pendência existente, a registrar em `docs/pendencias-obsidian.md` dentro do prazo da regra de ferro 3.
+Permanece uma lacuna no E2E: há indícios de sincronização/estado persistido entre cenários, e o teste de preço falha quando não há dado visível para a consulta. A execução com jar real confirmou a infraestrutura habilitada, mas não permitiu declarar os 21 casos verdes. A checagem de evidências múltiplas deve continuar sendo acompanhada nas execuções de integração. A sincronização da pendência no Obsidian continua aberta, conforme `docs/pendencias-obsidian.md`.
 
 ## Próximo passo
 
-Sincronizar a pendência Obsidian e encaminhar o PR para auditoria independente; deploy em nuvem fica para decisão futura do usuário, fora desta entrega.
+Investigar e estabilizar as lacunas restantes do E2E (sincronização/estado entre cenários e ausência de dado visível no teste de preço), repetir a suíte completa e então criar commit em pt-BR e fazer push da branch `docs/cadeia-inicial`. Ainda não houve commit nem push.
 
 ## Região gerada
 
 <!-- minerva-continuity:generated:start -->
-Estado gerado para sincronização: entrega dos níveis 1-3 do desafio MAPS (opções A e B) sobre a estrutura ADR-003 consolidada, com a correção do contrato assíncrono da posição (Opção B) e a remoção do código morto do caminho síncrono (`ConsultarPosicaoActor`, `PosicaoService`); commit, push e PR abertos nesta sessão; deploy em nuvem adiado por decisão do usuário (❓ LACUNA), aguardando sincronização Obsidian.
+Estado gerado para sincronização: renomes de DTOs, enums e testes e correções de evidência, login, foco do Drawer e sincronização de saldo aplicados; ADR-003 e docs/lib.md atualizados; compile/test-compile e Maven com 130 testes, guard-lib, fronteiras e build frontend verdes; E2E real em 21 casos não concluído verde, com lacunas de estado entre cenários e dado visível no teste de preço; sem commit/push.
 <!-- minerva-continuity:generated:end -->

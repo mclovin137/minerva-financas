@@ -1,10 +1,10 @@
 package br.com.minerva.financas.ativo.builder;
 
 import br.com.minerva.financas.ativo.dominio.Ativo;
-import br.com.minerva.financas.ativo.dominio.TipoAtivo;
-import br.com.minerva.financas.ativo.dto.AtivoRequisicao;
-import br.com.minerva.financas.ativo.dto.AtivoResposta;
-import br.com.minerva.financas.ativo.dto.PrecoResposta;
+import br.com.minerva.financas.ativo.dominio.TipoAtivoEnum;
+import br.com.minerva.financas.ativo.dto.AtivoRequisicaoDTO;
+import br.com.minerva.financas.ativo.dto.AtivoRespostaDTO;
+import br.com.minerva.financas.ativo.dto.PrecoRespostaDTO;
 import br.com.minerva.financas.comum.dominio.ErroAplicacao;
 import br.com.minerva.financas.comum.helper.Requisicoes;
 
@@ -19,7 +19,7 @@ public final class AtivoBuilder {
     private AtivoBuilder() {
     }
 
-    public static Ativo paraDominio(AtivoRequisicao r) {
+    public static Ativo paraDominio(AtivoRequisicaoDTO r) {
         if (r == null) {
             throw new ErroAplicacao("REQUISICAO_INVALIDA", 400, "O corpo da requisição é obrigatório.");
         }
@@ -39,21 +39,21 @@ public final class AtivoBuilder {
         }
     }
 
-    public static AtivoResposta resposta(Ativo ativo) {
-        return new AtivoResposta(ativo.codigo(), ativo.nome(), ativo.tipo().name(),
+    public static AtivoRespostaDTO resposta(Ativo ativo) {
+        return new AtivoRespostaDTO(ativo.codigo(), ativo.nome(), ativo.tipo().name(),
                 ativo.dataEmissao(), ativo.dataVencimento());
     }
 
-    public static PrecoResposta respostaDePreco(String codigo, LocalDate data, long precoE8) {
-        return new PrecoResposta(codigo, data, BigDecimal.valueOf(precoE8, 8));
+    public static PrecoRespostaDTO respostaDePreco(String codigo, LocalDate data, long precoE8) {
+        return new PrecoRespostaDTO(codigo, data, BigDecimal.valueOf(precoE8, 8));
     }
 
-    private static TipoAtivo tipo(String bruto) {
+    private static TipoAtivoEnum tipo(String bruto) {
         Requisicoes.texto(bruto, "tipo");
         try {
-            return TipoAtivo.valueOf(bruto);
+            return TipoAtivoEnum.valueOf(bruto);
         } catch (IllegalArgumentException e) {
-            String validos = Arrays.stream(TipoAtivo.values()).map(Enum::name).collect(Collectors.joining(", "));
+            String validos = Arrays.stream(TipoAtivoEnum.values()).map(Enum::name).collect(Collectors.joining(", "));
             throw ErroAplicacao.campoInvalido("tipo", "O tipo deve ser um de: " + validos + ".");
         }
     }

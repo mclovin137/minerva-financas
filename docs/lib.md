@@ -13,7 +13,10 @@
 | vite | build frontend | ^7.1.0 | 7.3.x | Build e servidor de desenvolvimento com proxy para a API | declarada em `frontend/package.json`; resolvida no npm |
 | @vitejs/plugin-react | build frontend | ^5.0.0 | 5.x | Suporte a JSX e fast refresh no Vite | declarada em `frontend/package.json`; resolvida no npm |
 | typescript | build frontend | ^5.9.0 | 5.9.x | Verificação de tipos em modo estrito | declarada em `frontend/package.json`; resolvida no npm |
-| @types/react, @types/react-dom | build frontend | ^19.2.0 | 19.2.x | Tipos do React para o TypeScript | declaradas em `frontend/package.json`; resolvidas no npm |
+| @playwright/test | testes frontend | ^1.62.1 | 1.62.x | Testes end-to-end do frontend | declarada em `frontend/package.json`; resolvida no npm |
+| @types/node | build frontend | ^26.4.1 | 26.4.x | Tipos do Node.js para o TypeScript e a configuração do build | declarada em `frontend/package.json`; resolvida no npm |
+| @types/react | build frontend | ^19.2.0 | 19.2.x | Tipos do React para o TypeScript | declarada em `frontend/package.json`; resolvida no npm |
+| @types/react-dom | build frontend | ^19.2.0 | 19.2.x | Tipos do React DOM para o TypeScript | declarada em `frontend/package.json`; resolvida no npm |
 
 O plugin `org.springframework.boot:spring-boot-maven-plugin` é build tooling, não dependência de runtime; sua versão resolvida pelo parent é 4.1.1.
 

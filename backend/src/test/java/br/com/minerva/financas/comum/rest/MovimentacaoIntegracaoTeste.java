@@ -14,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /** Compra, venda e consulta (TC-017 a TC-024) e as regras temporais TC-042 e TC-046 a TC-048. */
-class MovimentacaoIT extends TesteIntegracao {
+class MovimentacaoIntegracaoTeste extends TesteIntegracao {
 
     /** 2020-02-28 é uma sexta-feira; 2020-02-29 é sábado. */
     private static final String SEXTA = "2020-02-28";

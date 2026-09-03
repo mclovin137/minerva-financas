@@ -20,4 +20,5 @@
 | Design de telas e estados (`docs/design/telas.md`) | Base Minerva: `design/telas.md` | Severino | 2026-09-03 23:59 |
 | Dependências novas: spring-security-crypto, React, Vite, TypeScript | Base Minerva: inventário de dependências | Severino | 2026-09-03 23:59 |
 | ADR-003: estrutura de pacotes e camadas do backend | Base Minerva: `adrs/adr-003-estrutura-do-backend.md` | Yoda | 2026-09-03 23:59 |
+| Emenda da ADR-003 e registro das dependências frontend de teste e tipagem | Base Minerva: `adrs/adr-003-estrutura-do-backend.md` e inventário de dependências | Severino | 2026-09-04 23:59 |
 | Correção pós-auditoria QA: contrato assíncrono da posição (Opção B) unificado em `/posicao` e `/posicao/{id}`, removido `/posicao/assinc`; achados não bloqueantes a/b/c corrigidos | Base Minerva: notas técnicas de `posicao/` e estado do produto | Severino | 2026-09-04 23:59 |

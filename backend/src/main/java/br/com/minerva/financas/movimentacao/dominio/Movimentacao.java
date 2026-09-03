@@ -5,7 +5,7 @@ import br.com.minerva.financas.comum.dominio.Quantidade;
 
 import java.time.LocalDate;
 
-public record Movimentacao(long id, String ativo, LocalDate data, TipoMovimentacao tipo,
+public record Movimentacao(long id, String ativo, LocalDate data, TipoMovimentacaoEnum tipo,
                            Quantidade quantidade, Dinheiro valor) {
     public Movimentacao {
         if (ativo == null || data == null || tipo == null || quantidade == null || valor == null) {

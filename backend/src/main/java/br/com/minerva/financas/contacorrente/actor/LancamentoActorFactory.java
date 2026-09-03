@@ -1,6 +1,6 @@
 package br.com.minerva.financas.contacorrente.actor;
 
-import br.com.minerva.financas.contacorrente.dominio.TipoLancamento;
+import br.com.minerva.financas.contacorrente.dominio.TipoLancamentoEnum;
 import org.springframework.stereotype.Component;
 
 /**
@@ -19,7 +19,7 @@ public class LancamentoActorFactory {
         this.debitoActor = debitoActor;
     }
 
-    public ILancamentoActor criar(TipoLancamento tipo) {
-        return tipo == TipoLancamento.CREDITO ? creditoActor : debitoActor;
+    public ILancamentoActor criar(TipoLancamentoEnum tipo) {
+        return tipo == TipoLancamentoEnum.CREDITO ? creditoActor : debitoActor;
     }
 }

@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * O enunciado é explícito: valores em reais não têm fração de centavo, preços unitários podem ter
  * mais casas, e o arredondamento é sempre para baixo.
  */
-class EscalasIT extends TesteIntegracao {
+class EscalasIntegracaoTeste extends TesteIntegracao {
 
     private static final String DIA = "2020-02-28";
 

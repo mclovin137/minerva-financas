@@ -1,7 +1,7 @@
 package br.com.minerva.financas.ativo.dao;
 
 import br.com.minerva.financas.ativo.dominio.Ativo;
-import br.com.minerva.financas.ativo.dominio.TipoAtivo;
+import br.com.minerva.financas.ativo.dominio.TipoAtivoEnum;
 import br.com.minerva.financas.comum.dominio.PrecoUnitario;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -31,7 +31,7 @@ public class AtivoDAO implements IAtivoDAO {
         return new Ativo(
                 rs.getString("codigo"),
                 rs.getString("nome"),
-                TipoAtivo.valueOf(rs.getString("tipo")),
+                TipoAtivoEnum.valueOf(rs.getString("tipo")),
                 LocalDate.parse(rs.getString("data_emissao")),
                 LocalDate.parse(rs.getString("data_vencimento")));
     }

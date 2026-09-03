@@ -32,8 +32,8 @@ test.describe('Fluxo financeiro de ponta a ponta', () => {
     await expect(painel.getByRole('alert')).toContainText('negativo')
     await expect(painel.getByLabel('Valor (R$)')).toHaveValue('150,00')
 
-    await painel.getByRole('button', { name: 'Cancelar' }).click()
     page.once('dialog', (confirmacao) => confirmacao.accept())
+    await painel.getByRole('button', { name: 'Cancelar' }).click()
     expect(await saldoExibido(page)).toBe(saldoAntes)
   })
 

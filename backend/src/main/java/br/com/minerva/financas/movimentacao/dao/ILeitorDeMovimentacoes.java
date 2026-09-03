@@ -1,7 +1,7 @@
 package br.com.minerva.financas.movimentacao.dao;
 
 import br.com.minerva.financas.comum.dominio.PrecoUnitario;
-import br.com.minerva.financas.movimentacao.dominio.TipoMovimentacao;
+import br.com.minerva.financas.movimentacao.dominio.TipoMovimentacaoEnum;
 
 import java.time.LocalDate;
 import java.util.Map;
@@ -16,6 +16,6 @@ public interface ILeitorDeMovimentacoes {
 
     @FunctionalInterface
     interface ConsumidorDeMovimento {
-        void aceitar(String codigo, TipoMovimentacao tipo, long quantidadeE2, long valorCentavos);
+        void aceitar(String codigo, TipoMovimentacaoEnum tipo, long quantidadeE2, long valorCentavos);
     }
 }

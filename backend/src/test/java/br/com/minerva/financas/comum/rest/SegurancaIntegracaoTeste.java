@@ -15,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /** Opção A: autenticação, capacidades e isolamento entre usuários. TC-065 a TC-072. */
-class SegurancaIT extends TesteIntegracao {
+class SegurancaIntegracaoTeste extends TesteIntegracao {
 
     private static final String DIA = "2020-02-28";
 

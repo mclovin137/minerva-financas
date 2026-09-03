@@ -1,7 +1,7 @@
 package br.com.minerva.financas.ativo.actor;
 
 import br.com.minerva.financas.ativo.builder.AtivoBuilder;
-import br.com.minerva.financas.ativo.dto.AtivoResposta;
+import br.com.minerva.financas.ativo.dto.AtivoRespostaDTO;
 import br.com.minerva.financas.ativo.service.AtivoService;
 import org.springframework.stereotype.Component;
 
@@ -14,7 +14,7 @@ public class ConsultarAtivoActor {
         this.service = service;
     }
 
-    public AtivoResposta executar(String codigo) {
+    public AtivoRespostaDTO executar(String codigo) {
         return AtivoBuilder.resposta(service.ativo(codigo));
     }
 }

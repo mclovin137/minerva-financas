@@ -1,7 +1,7 @@
 package br.com.minerva.financas.posicao.actor;
 
 import br.com.minerva.financas.posicao.builder.PosicaoBuilder;
-import br.com.minerva.financas.posicao.dto.PosicaoResposta;
+import br.com.minerva.financas.posicao.dto.PosicaoRespostaDTO;
 import br.com.minerva.financas.posicao.service.IPosicaoAssincronaService;
 import org.springframework.stereotype.Component;
 
@@ -16,7 +16,7 @@ public class ConsultarPosicaoAssincronaActor {
                 "RECURSO_NAO_ENCONTRADO", 404,
                 "Execução inexistente, já entregue ou expirada."));
     }
-    public List<PosicaoResposta> respostas(List<br.com.minerva.financas.posicao.dominio.Posicao> posicoes) {
+    public List<PosicaoRespostaDTO> respostas(List<br.com.minerva.financas.posicao.dominio.Posicao> posicoes) {
         return posicoes.stream().map(PosicaoBuilder::resposta).toList();
     }
 }

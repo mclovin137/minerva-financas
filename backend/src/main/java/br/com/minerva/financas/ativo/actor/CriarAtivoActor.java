@@ -1,7 +1,7 @@
 package br.com.minerva.financas.ativo.actor;
 
 import br.com.minerva.financas.ativo.builder.AtivoBuilder;
-import br.com.minerva.financas.ativo.dto.AtivoRequisicao;
+import br.com.minerva.financas.ativo.dto.AtivoRequisicaoDTO;
 import br.com.minerva.financas.ativo.service.AtivoService;
 import org.springframework.stereotype.Component;
 
@@ -14,7 +14,7 @@ public class CriarAtivoActor {
         this.service = service;
     }
 
-    public void executar(AtivoRequisicao requisicao) {
+    public void executar(AtivoRequisicaoDTO requisicao) {
         service.criarAtivo(AtivoBuilder.paraDominio(requisicao));
     }
 }

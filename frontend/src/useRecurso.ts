@@ -1,11 +1,11 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { ErroApi, ErroDeRede } from './api/cliente'
 
 export interface Recurso<T> {
   dados: T | null
   carregando: boolean
   erro: string | null
-  recarregar: () => void
+  recarregar: () => Promise<void>
 }
 
 /**
@@ -18,6 +18,21 @@ export function useRecurso<T>(carregar: () => Promise<T>, dependencias: unknown[
     const [carregando, definirCarregando] = useState(true)
   const [erro, definirErro] = useState<string | null>(null)
   const [gatilho, definirGatilho] = useState(0)
+  const recarregamentosPendentes = useRef<Array<() => void>>([])
+  const recarregamentoConcluido = useRef(false)
+
+  function concluirRecarregamentos() {
+    recarregamentosPendentes.current.splice(0).forEach((resolver) => resolver())
+  }
+
+  useEffect(() => concluirRecarregamentos, [])
+
+  useEffect(() => {
+    if (!recarregamentoConcluido.current) return
+
+    recarregamentoConcluido.current = false
+    concluirRecarregamentos()
+  }, [carregando, dados, erro, gatilho])
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const executar = useCallback(carregar, dependencias)
@@ -27,7 +42,8 @@ export function useRecurso<T>(carregar: () => Promise<T>, dependencias: unknown[
     definirCarregando(true)
     definirErro(null)
 
-    executar()
+    Promise.resolve()
+      .then(() => executar())
       .then((resultado) => {
         if (!cancelado) definirDados(resultado)
       })
@@ -43,7 +59,10 @@ export function useRecurso<T>(carregar: () => Promise<T>, dependencias: unknown[
         )
       })
       .finally(() => {
-        if (!cancelado) definirCarregando(false)
+        if (!cancelado) {
+          definirCarregando(false)
+          recarregamentoConcluido.current = true
+        }
       })
 
     return () => {
@@ -51,5 +70,13 @@ export function useRecurso<T>(carregar: () => Promise<T>, dependencias: unknown[
     }
   }, [executar, gatilho])
 
-  return { dados, carregando, erro, recarregar: () => definirGatilho((n) => n + 1) }
+  const recarregar = useCallback(() => {
+    const concluido = new Promise<void>((resolver) => {
+      recarregamentosPendentes.current.push(resolver)
+    })
+    definirGatilho((n) => n + 1)
+    return concluido
+  }, [])
+
+  return { dados, carregando, erro, recarregar }
 }

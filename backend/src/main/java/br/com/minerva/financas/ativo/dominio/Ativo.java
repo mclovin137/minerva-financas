@@ -13,7 +13,7 @@ import java.time.LocalDate;
  * @param dataEmissao    primeiro dia em que o ativo pode ser movimentado, inclusive
  * @param dataVencimento dia a partir do qual o ativo não pode mais ser movimentado, exclusive
  */
-public record Ativo(String codigo, String nome, TipoAtivo tipo, LocalDate dataEmissao, LocalDate dataVencimento) {
+public record Ativo(String codigo, String nome, TipoAtivoEnum tipo, LocalDate dataEmissao, LocalDate dataVencimento) {
 
     public Ativo {
         if (codigo == null || codigo.isBlank()) {

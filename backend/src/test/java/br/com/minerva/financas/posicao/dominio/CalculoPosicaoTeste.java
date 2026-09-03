@@ -4,7 +4,7 @@ import br.com.minerva.financas.comum.dominio.Dinheiro;
 import br.com.minerva.financas.comum.dominio.PrecoUnitario;
 import br.com.minerva.financas.comum.dominio.Quantidade;
 import br.com.minerva.financas.movimentacao.dominio.Movimentacao;
-import br.com.minerva.financas.movimentacao.dominio.TipoMovimentacao;
+import br.com.minerva.financas.movimentacao.dominio.TipoMovimentacaoEnum;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -17,20 +17,20 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /** As fórmulas D1 isoladas de HTTP e de banco: onde um erro de arredondamento nasceria. */
-class CalculoPosicaoTest {
+class CalculoPosicaoTeste {
 
     private static final LocalDate DIA = LocalDate.parse("2020-02-28");
     private static final PrecoUnitario DEZ = preco("10.00");
 
     private static Movimentacao compra(String quantidade, String valor) {
-        return movimento(TipoMovimentacao.COMPRA, quantidade, valor);
+        return movimento(TipoMovimentacaoEnum.COMPRA, quantidade, valor);
     }
 
     private static Movimentacao venda(String quantidade, String valor) {
-        return movimento(TipoMovimentacao.VENDA, quantidade, valor);
+        return movimento(TipoMovimentacaoEnum.VENDA, quantidade, valor);
     }
 
-    private static Movimentacao movimento(TipoMovimentacao tipo, String quantidade, String valor) {
+    private static Movimentacao movimento(TipoMovimentacaoEnum tipo, String quantidade, String valor) {
         return new Movimentacao(1L, "ATIVO1", DIA, tipo,
                 Quantidade.de(new BigDecimal(quantidade)), Dinheiro.de(new BigDecimal(valor)));
     }
@@ -141,7 +141,7 @@ class CalculoPosicaoTest {
     void acumuladorNaoCresceComOVolume() {
         var acumulador = new CalculoPosicao.Acumulador();
         for (int i = 0; i < 200_000; i++) {
-            acumulador.acumular(TipoMovimentacao.COMPRA, 100, 1000);
+            acumulador.acumular(TipoMovimentacaoEnum.COMPRA, 100, 1000);
         }
 
         var resultado = CalculoPosicao.calcular(acumulador, DEZ);

@@ -61,7 +61,9 @@ test.describe('Administração do acervo', () => {
     await definirCursorDeData(page, DIA_UTIL)
     await page.getByRole('button', { name: 'Mercado histórico', exact: true }).click()
 
-    await page.getByLabel('Ativo').selectOption('ATIVO4')
+    const ativo = page.getByRole('combobox', { name: 'Ativo', exact: true })
+    await expect(ativo).toBeVisible()
+    await ativo.selectOption('ATIVO4')
     await page.getByRole('button', { name: 'Definir preço' }).click()
     const painel = page.getByRole('dialog')
     await painel.getByLabel('Data').fill(DIA_UTIL)
@@ -69,6 +71,14 @@ test.describe('Administração do acervo', () => {
     await painel.getByRole('button', { name: 'Salvar preço' }).click()
 
     await expect(page.getByRole('status')).toContainText('Preço de mercado salvo')
+
+    await page.getByRole('button', { name: 'Sair', exact: true }).click()
+    await entrar(page, 'usuario7', 'senha7')
+    await page.getByRole('button', { name: 'Mercado histórico', exact: true }).click()
+
+    const precoDoAtivo = page.getByRole('combobox', { name: 'Ativo', exact: true })
+    await expect(precoDoAtivo).toBeVisible()
+    await precoDoAtivo.selectOption('ATIVO4')
     await expect(page.locator('.indicador.destaque .valor')).toContainText('42,50')
   })
 

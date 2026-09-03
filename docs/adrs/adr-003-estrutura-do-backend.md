@@ -105,6 +105,13 @@ REST → Actor → { Helper, Service, Builder, DAO }
 - **Interface tem prefixo `I`**: `IContaCorrenteDAO`, `IPosicaoService`. A implementação usa o mesmo
   nome sem o prefixo.
 - Sem abreviação em nome de classe, método, campo ou parâmetro.
+- Toda classe DTO termina com o sufixo `DTO`.
+- Toda classe de teste unitário termina com `Teste`; toda classe de teste de integração termina com
+  `IntegracaoTeste`.
+- Toda classe enum termina com o sufixo `Enum`.
+- Construtor único não leva `@Autowired`; a anotação só é necessária quando há mais de um construtor
+  concorrendo pela seleção do Spring. `@Autowired` no construtor não tem efeito sobre instanciação
+  manual via `new`, como nos testes que não dependem do container.
 
 ### Fábrica contra duplicação
 
@@ -175,3 +182,5 @@ elas superar o ganho de coesão.
 ## Histórico
 
 - 2026-09-02: ADR criada com status aceita.
+- 2026-09-03: emenda com as convenções de sufixos `DTO`, `Teste`/`IntegracaoTeste` e `Enum`, e a
+  regra de uso de `@Autowired` em construtores.

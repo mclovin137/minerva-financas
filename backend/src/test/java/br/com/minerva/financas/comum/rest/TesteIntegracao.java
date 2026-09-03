@@ -21,6 +21,8 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -58,13 +60,12 @@ abstract class TesteIntegracao {
     @LocalServerPort
     private int porta;
 
-    /** Caso em execução, extraído do {@code @DisplayName}, para nomear a pasta de evidência. */
-    private String casoAtual = "sem-tc";
+    /** Casos em execução, extraídos do {@code @DisplayName}, para nomear as pastas de evidência. */
+    private List<String> casosAtuais = List.of("sem-tc");
 
     @BeforeEach
     void identificarCaso(TestInfo informacao) {
-        Matcher achado = IDENTIFICADOR_DE_CASO.matcher(informacao.getDisplayName());
-        casoAtual = achado.find() ? achado.group() : "sem-tc";
+        casosAtuais = identificadoresDeCaso(informacao.getDisplayName());
     }
 
     @Autowired
@@ -209,7 +210,20 @@ abstract class TesteIntegracao {
 
     // ---------------------------------------------------------------- evidência
 
-    private static final Pattern IDENTIFICADOR_DE_CASO = Pattern.compile("TC-\\d{3}");
+    private static final Pattern IDENTIFICADOR_DE_CASO = Pattern.compile("TC-\\d{3}(?:/\\d{3})*");
+
+    static List<String> identificadoresDeCaso(String displayName) {
+        Matcher achado = IDENTIFICADOR_DE_CASO.matcher(displayName);
+        List<String> identificadores = new ArrayList<>();
+        while (achado.find()) {
+            String[] casos = achado.group().split("/");
+            identificadores.add(casos[0]);
+            for (int indice = 1; indice < casos.length; indice++) {
+                identificadores.add("TC-" + casos[indice]);
+            }
+        }
+        return identificadores.isEmpty() ? List.of("sem-tc") : List.copyOf(identificadores);
+    }
 
     /** Identifica a versão exercitada, para que a evidência não fique órfã do código que a produziu. */
     private static final String COMMIT = commitAtual();
@@ -224,8 +238,6 @@ abstract class TesteIntegracao {
      */
     private void registrarEvidencia(HttpRequest requisicao, HttpResponse<String> resposta) {
         try {
-            Path pasta = Path.of("..", "artifacts", "testes", COMMIT, casoAtual);
-            Files.createDirectories(pasta);
             String linha = """
                     {"metodo":"%s","caminho":"%s","autenticado":%s,"status":%d,"corpoDaResposta":%s}
                     """.formatted(
@@ -235,11 +247,15 @@ abstract class TesteIntegracao {
                     requisicao.headers().firstValue("Authorization").isPresent(),
                     resposta.statusCode(),
                     JSON.writeValueAsString(resposta.body()));
-            Files.writeString(pasta.resolve("requisicoes.jsonl"), linha,
-                    StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+            for (String caso : casosAtuais) {
+                Path pasta = Path.of("..", "artifacts", "testes", COMMIT, caso);
+                Files.createDirectories(pasta);
+                Files.writeString(pasta.resolve("requisicoes.jsonl"), linha,
+                        StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+            }
         } catch (java.io.IOException e) {
             // Evidência é registro, não asserção: falhar aqui esconderia o resultado real do caso.
-            System.err.println("Não foi possível registrar evidência de " + casoAtual + ": " + e.getMessage());
+            System.err.println("Não foi possível registrar evidência de " + casosAtuais + ": " + e.getMessage());
         }
     }
 

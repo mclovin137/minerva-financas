@@ -1,7 +1,7 @@
 package br.com.minerva.financas.movimentacao.actor;
 
 import br.com.minerva.financas.movimentacao.builder.MovimentacaoBuilder;
-import br.com.minerva.financas.movimentacao.dto.MovimentacaoResposta;
+import br.com.minerva.financas.movimentacao.dto.MovimentacaoRespostaDTO;
 import br.com.minerva.financas.movimentacao.service.MovimentacaoService;
 import org.springframework.stereotype.Component;
 
@@ -17,7 +17,7 @@ public class ListarMovimentacoesActor {
         this.service = service;
     }
 
-    public List<MovimentacaoResposta> executar(LocalDate inicio, LocalDate fim) {
+    public List<MovimentacaoRespostaDTO> executar(LocalDate inicio, LocalDate fim) {
         return service.listar(inicio, fim).stream().map(MovimentacaoBuilder::resposta).toList();
     }
 }

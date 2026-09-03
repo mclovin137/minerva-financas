@@ -8,6 +8,6 @@ import java.time.LocalDate;
  * continua declarado aqui de propósito: tolerar e ignorar o campo esconderia um bug do cliente,
  * então quem o enviar recebe 400 em vez de um sucesso enganoso.
  */
-public record AtivoRequisicao(String ativo, String nome, String tipo, LocalDate dataEmissao,
+public record AtivoRequisicaoDTO(String ativo, String nome, String tipo, LocalDate dataEmissao,
                               LocalDate dataVencimento, BigDecimal precoMercado) {
 }

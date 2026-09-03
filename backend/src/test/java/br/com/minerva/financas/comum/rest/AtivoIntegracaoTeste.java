@@ -14,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /** CRUD de ativos (TC-009 a TC-016) e preço de mercado por data (TC-033 a TC-040). */
-class AtivoIT extends TesteIntegracao {
+class AtivoIntegracaoTeste extends TesteIntegracao {
 
     @Test
     @DisplayName("TC-009 ativo válido retorna 201 sem corpo")

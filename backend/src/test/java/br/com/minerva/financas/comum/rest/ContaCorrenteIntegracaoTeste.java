@@ -14,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /** TC-001 a TC-008 e os filtros temporais de lançamentos: TC-041 e TC-043 a TC-045. */
-class ContaCorrenteIT extends TesteIntegracao {
+class ContaCorrenteIntegracaoTeste extends TesteIntegracao {
 
     private static final String DIA = "2020-02-28";
 

@@ -45,6 +45,8 @@ export class ErroDeRede extends Error {
 interface Opcoes {
   metodo?: 'GET' | 'POST' | 'PUT' | 'DELETE'
   corpo?: unknown
+  /** Permite chamadas de validação inicial sem tratar 401 como expiração de uma sessão existente. */
+  notificarExpiracao?: boolean
 }
 
 async function requisitar<T>(caminho: string, opcoes: Opcoes = {}): Promise<T> {
@@ -65,7 +67,7 @@ async function requisitar<T>(caminho: string, opcoes: Opcoes = {}): Promise<T> {
 
   if (resposta.status === 401) {
     limparCredencial()
-    aoExpirar()
+    if (opcoes.notificarExpiracao !== false) aoExpirar()
     throw new ErroApi(401, 'NAO_AUTENTICADO', 'Sua sessão expirou. Entre novamente.')
   }
 
@@ -147,7 +149,8 @@ export const api = {
       `/contacorrente/lancamentos?dataInicio=${inicio}&dataFim=${fim}`,
     ),
 
-  ativos: () => requisitar<import('./tipos').Ativo[]>('/ativos'),
+  ativos: (opcoes?: Pick<Opcoes, 'notificarExpiracao'>) =>
+    requisitar<import('./tipos').Ativo[]>('/ativos', opcoes),
 
   ativo: (codigo: string) => requisitar<import('./tipos').Ativo>(`/ativos/${encodeURIComponent(codigo)}`),
 

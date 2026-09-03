@@ -1,4 +1,4 @@
 package br.com.minerva.financas.posicao.dto;
 
-public record ExecucaoResposta(long id) {
+public record ExecucaoRespostaDTO(long id) {
 }

@@ -6,7 +6,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
 @ActiveProfiles("test")
-class MinervaFinancasApplicationTests {
+class MinervaFinancasApplicationTeste {
 
     @Test
     void contextoSobe() {

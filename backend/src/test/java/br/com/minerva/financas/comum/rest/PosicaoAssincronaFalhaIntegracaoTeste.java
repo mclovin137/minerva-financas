@@ -27,8 +27,8 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
  * falha real de banco seria não determinístico; o que importa provar é o mapeamento de estado, e ele
  * é o mesmo qualquer que seja a origem do erro.
  */
-@Import(PosicaoAssincronaFalhaIT.LeituraQueFalha.class)
-class PosicaoAssincronaFalhaIT extends TesteIntegracao {
+@Import(PosicaoAssincronaFalhaIntegracaoTeste.LeituraQueFalha.class)
+class PosicaoAssincronaFalhaIntegracaoTeste extends TesteIntegracao {
 
     private static final String DIA = "2020-02-28";
 

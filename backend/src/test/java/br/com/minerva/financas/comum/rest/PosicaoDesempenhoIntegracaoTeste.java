@@ -18,12 +18,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * Metas de desempenho da opção B: TC-078, TC-079 e TC-080.
  * <p>
- * Reproduzir com {@code ./mvnw -f backend/pom.xml test -Dtest=PosicaoDesempenhoIT}.
+ * Reproduzir com {@code ./mvnw -f backend/pom.xml test -Dtest=PosicaoDesempenhoIntegracaoTeste}.
  * <p>
  * A carga é inserida direto no banco, e não pela API: o objetivo é medir a <em>consulta</em> sobre
  * 200.000 movimentações, e passar por 200.000 requisições HTTP mediria outra coisa.
  */
-class PosicaoDesempenhoIT extends TesteIntegracao {
+class PosicaoDesempenhoIntegracaoTeste extends TesteIntegracao {
 
     private static final int MOVIMENTACOES = 200_000;
     private static final long LIMITE_DE_HEAP_BYTES = 64L * 1024 * 1024;

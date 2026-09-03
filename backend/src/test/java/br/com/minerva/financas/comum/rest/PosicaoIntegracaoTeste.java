@@ -8,7 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /** Consulta de posição e as fórmulas D1: TC-025 a TC-032. */
-class PosicaoIT extends TesteIntegracao {
+class PosicaoIntegracaoTeste extends TesteIntegracao {
 
     private static final String DIA = "2020-02-28";
 

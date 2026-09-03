@@ -1,7 +1,7 @@
 package br.com.minerva.financas.contacorrente.actor;
 
 import br.com.minerva.financas.contacorrente.builder.LancamentoBuilder;
-import br.com.minerva.financas.contacorrente.dto.LancamentoResposta;
+import br.com.minerva.financas.contacorrente.dto.LancamentoRespostaDTO;
 import br.com.minerva.financas.contacorrente.service.ContaCorrenteService;
 import org.springframework.stereotype.Component;
 
@@ -17,7 +17,7 @@ public class ListarLancamentosActor {
         this.service = service;
     }
 
-    public List<LancamentoResposta> executar(LocalDate inicio, LocalDate fim) {
+    public List<LancamentoRespostaDTO> executar(LocalDate inicio, LocalDate fim) {
         return service.lancamentos(inicio, fim).stream().map(LancamentoBuilder::resposta).toList();
     }
 }

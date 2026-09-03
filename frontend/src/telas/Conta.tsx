@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { api, ErroApi } from '../api/cliente'
 import type { Lancamento } from '../api/tipos'
 import { Campo, Drawer } from '../componentes/Drawer'
@@ -12,14 +12,17 @@ export function Conta({ cursor, avisar }: { cursor: string; avisar: (texto: stri
   const [inicio, definirInicio] = useState(() => inicioDoMes(cursor))
   const [drawer, definirDrawer] = useState<Operacao | null>(null)
 
+  useEffect(() => {
+    definirInicio(inicioDoMes(cursor))
+  }, [cursor])
+
   const saldo = useRecurso(() => api.saldo(cursor), [cursor])
   const lancamentos = useRecurso(() => api.lancamentos(inicio, cursor), [inicio, cursor])
 
-  function concluir(texto: string) {
+  async function concluir(texto: string) {
+    await Promise.all([saldo.recarregar(), lancamentos.recarregar()])
     definirDrawer(null)
     avisar(texto)
-    saldo.recarregar()
-    lancamentos.recarregar()
   }
 
   return (
@@ -136,7 +139,7 @@ function FormularioLancamento({
   operacao: Operacao
   cursor: string
   aoFechar: () => void
-  aoConcluir: (texto: string) => void
+  aoConcluir: (texto: string) => void | Promise<void>
 }) {
   const [valor, definirValor] = useState('')
   const [descricao, definirDescricao] = useState('')
@@ -174,7 +177,7 @@ function FormularioLancamento({
       const numero = paraNumero(valor)!
       if (credito) await api.credito(numero, descricao, data)
       else await api.debito(numero, descricao, data)
-      aoConcluir(credito ? 'Crédito lançado.' : 'Débito lançado.')
+      await aoConcluir(credito ? 'Crédito lançado.' : 'Débito lançado.')
     } catch (falha) {
       // 400 é erro de campo e volta para o campo; 409 é conflito com o estado e fica no rodapé,
       // com os valores digitados preservados.

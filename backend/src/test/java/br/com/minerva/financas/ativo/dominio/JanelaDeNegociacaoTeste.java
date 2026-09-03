@@ -15,10 +15,10 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /** Janela de negociação: emissão inclusiva, vencimento exclusivo e apenas dias de semana. */
-class JanelaDeNegociacaoTest {
+class JanelaDeNegociacaoTeste {
 
     private static Ativo ativo(String emissao, String vencimento) {
-        return new Ativo("ATIVO1", "Ativo 1", TipoAtivo.RV, LocalDate.parse(emissao), LocalDate.parse(vencimento));
+        return new Ativo("ATIVO1", "Ativo 1", TipoAtivoEnum.RV, LocalDate.parse(emissao), LocalDate.parse(vencimento));
     }
 
     @Test

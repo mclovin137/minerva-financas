@@ -2,8 +2,8 @@ package br.com.minerva.financas.posicao.rest;
 
 import br.com.minerva.financas.comum.helper.Requisicoes;
 import br.com.minerva.financas.posicao.actor.PosicaoActorFactory;
-import br.com.minerva.financas.posicao.dto.ExecucaoResposta;
-import br.com.minerva.financas.posicao.dto.PosicaoResposta;
+import br.com.minerva.financas.posicao.dto.ExecucaoRespostaDTO;
+import br.com.minerva.financas.posicao.dto.PosicaoRespostaDTO;
 import br.com.minerva.financas.posicao.service.IPosicaoAssincronaService;
 import br.com.minerva.financas.comum.dominio.ErroAplicacao;
 import org.springframework.http.HttpStatus;
@@ -28,13 +28,13 @@ class PosicaoController {
     }
 
     @GetMapping
-    ResponseEntity<ExecucaoResposta> solicitar(@RequestParam(name = "data", required = false) String data) {
+    ResponseEntity<ExecucaoRespostaDTO> solicitar(@RequestParam(name = "data", required = false) String data) {
         long id = actors.solicitacao().executar(Requisicoes.filtroDeData(data, "data"));
-        return ResponseEntity.accepted().body(new ExecucaoResposta(id));
+        return ResponseEntity.accepted().body(new ExecucaoRespostaDTO(id));
     }
 
     @GetMapping("/{id}")
-    ResponseEntity<List<PosicaoResposta>> resultado(@PathVariable long id) {
+    ResponseEntity<List<PosicaoRespostaDTO>> resultado(@PathVariable long id) {
         var estado = actors.consulta().executar(id);
         return switch (estado) {
             case IPosicaoAssincronaService.Estado.EmAndamento ignorado ->

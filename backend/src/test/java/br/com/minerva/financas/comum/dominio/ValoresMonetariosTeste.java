@@ -21,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
  * mais casas — como o preço da gasolina. Estes testes fixam essa separação, porque é onde um erro
  * silencioso de arredondamento entraria.
  */
-class ValoresMonetariosTest {
+class ValoresMonetariosTeste {
 
     @Nested
     @DisplayName("Dinheiro: duas casas, guardado como centavos inteiros")

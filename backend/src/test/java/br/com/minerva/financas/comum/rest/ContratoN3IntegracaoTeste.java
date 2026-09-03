@@ -22,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * Contrato canônico do nível 3: as cinco rotas que o enunciado fixa literalmente, com os payloads
  * exatos dos exemplos. TC-057 a TC-064.
  */
-class ContratoN3IT extends TesteIntegracao {
+class ContratoN3IntegracaoTeste extends TesteIntegracao {
 
     /** O ativo do exemplo do enunciado existe no seed, e 2020-02-28 é uma sexta-feira. */
     private static final String DIA = "2020-02-28";

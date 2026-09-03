@@ -70,8 +70,8 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <includes>
-                        <include>**/*Test.java</include>
-                        <include>**/*IT.java</include>
+                        <include>**/*Teste.java</include>
+                        <include>**/*IntegracaoTeste.java</include>
                     </includes>
                 </configuration>
             </plugin>
