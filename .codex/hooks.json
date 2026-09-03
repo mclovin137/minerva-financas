@@ -1,0 +1,7 @@
+{
+  "hooks": {
+    "SessionStart": null,
+    "PreToolUse": null,
+    "PostToolUse": null
+  }
+}
