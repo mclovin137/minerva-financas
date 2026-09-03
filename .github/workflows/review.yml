@@ -1,0 +1,152 @@
+name: Review da aplicação
+
+# Papel de "review" da regra de ferro 8: aderência às regras de ferro, aos artefatos aprovados e à
+# qualidade da entrega. Não executa a suíte — isso é do pipeline de testes de integração.
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  fronteiras-de-arquitetura:
+    name: Fronteiras de camada (DDD)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Obter o repositório
+        uses: actions/checkout@v4
+
+      - name: Verificar direção de dependência
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="backend/src/main/java/br/com/minerva/financas"
+          falhou=0
+
+          verificar() {
+            local descricao="$1" padrao="$2" caminho="$3"
+            local encontrou=0
+            while IFS= read -r pasta; do
+              [ -z "$pasta" ] && continue
+              if grep -rEn "$padrao" "$pasta"; then
+                encontrou=1
+              fi
+            done <<< "$caminho"
+            if [ "$encontrou" -eq 1 ]; then
+              echo "::error::$descricao"
+              falhou=1
+            else
+              echo "OK: $descricao"
+            fi
+          }
+
+          # A ADR-003 organiza o código por entidade. O find limita cada regra às
+          # subpastas da estrutura nova; uma interface aninhada não é um tipo de
+          # arquivo e, portanto, não entra no gate de nomenclatura abaixo.
+          pastas_dominio=$(find "$base" -mindepth 2 -maxdepth 2 -type d -name dominio -print)
+          pastas_atores_servicos=$(find "$base" -mindepth 2 -maxdepth 2 -type d \( \
+            -name actor -o -name service -o -name helper -o -name builder \
+          \) -print)
+          pastas_rest=$(find "$base" -mindepth 2 -maxdepth 2 -type d -name rest -print)
+
+          # Regra 1: o domínio de cada entidade não conhece framework, JDBC nem serialização.
+          verificar "dominio por entidade nao pode importar framework, JDBC ou Jackson" \
+            '^import (org\.springframework|jakarta|java\.sql|javax\.sql|com\.fasterxml|tools\.jackson)' \
+            "$pastas_dominio"
+
+          # Regra 2: a lógica intermediária não conhece a infraestrutura antiga
+          # nem HTTP. A cadeia da ADR-003 permite dependências entre atores,
+          # helpers, services, builders e interfaces DAO.
+          verificar "actor/service/helper/builder nao podem importar infra antiga ou HTTP" \
+            '^import (br\.com\.minerva\.financas\.infra|org\.springframework\.web|org\.springframework\.http|jakarta\.servlet|java\.sql|javax\.sql)' \
+            "$pastas_atores_servicos"
+
+          # Regra 3: REST recebe/devolve DTO e nunca conversa com DAO, SQL ou infra.
+          verificar "rest nao pode importar DAO, SQL ou infra" \
+            '^import (br\.com\.minerva\.financas\.[^.]+\.dao\.|br\.com\.minerva\.financas\.infra|org\.springframework\.jdbc|org\.springframework\.web\.servlet\.support|java\.sql|javax\.sql)' \
+            "$pastas_rest"
+
+          # Regra 4: só interfaces top-level em pacotes de entidade são verificadas.
+          # Isso evita falso positivo para interfaces aninhadas (por exemplo, um
+          # consumidor interno de uma interface de porta).
+          while IFS= read -r arquivo; do
+            nome=$(basename "$arquivo" .java)
+            if grep -Eq '^((public|sealed|non-sealed)[[:space:]]+)*interface[[:space:]]+' "$arquivo" \
+              && [[ "$nome" != I* ]]; then
+              echo "::error file=$arquivo::interface top-level deve ter prefixo I"
+              falhou=1
+            fi
+          done < <(
+            while IFS= read -r pasta; do
+              [ -z "$pasta" ] && continue
+              find "$pasta" -type f -name '*.java' -print
+            done < <(find "$base" -mindepth 2 -maxdepth 2 -type d \( \
+              -name actor -o -name service -o -name helper -o -name builder -o -name dao -o -name dominio \
+            \) -print)
+          )
+
+          # A presença destes diretórios indica que a migração ainda não terminou.
+          # Mantemos a falha explícita para impedir que o esquema antigo passe como
+          # se fosse a estrutura da ADR-003.
+          for legado in api aplicacao dominio infra seguranca; do
+            if [[ -d "$base/$legado" ]]; then
+              echo "::error file=$base/$legado::pacote global legado ainda presente; migrar para a estrutura por entidade"
+              falhou=1
+            fi
+          done
+
+          exit $falhou
+
+      - name: Verificar ausência de tipos de ponto flutuante em valores financeiros
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="backend/src/main/java/br/com/minerva/financas"
+          # A ADR-001 proíbe double e float para dinheiro, preço e quantidade: 105.53 não é
+          # representável em binário e o erro aparece no centavo depois de algumas somas.
+          # Linhas de comentário são descartadas antes: citar "double" ao explicar por que ele não é
+          # usado não pode reprovar o gate.
+          encontrados=$(grep -rEn '\b(double|float)\b' "$base" \
+            | grep -vE ':[[:space:]]*(\*|//|/\*)' || true)
+          if [ -n "$encontrados" ]; then
+            echo "$encontrados"
+            echo "::error::valores financeiros nao podem usar double nem float (ADR-001)"
+            exit 1
+          fi
+          echo "OK: nenhum tipo de ponto flutuante no codigo de producao"
+
+  documentacao:
+    name: Documentação e continuidade
+    runs-on: ubuntu-latest
+    steps:
+      - name: Obter o repositório
+        uses: actions/checkout@v4
+
+      - name: Verificar cardinalidade e tamanho da continuidade
+        run: python3 .github/scripts/verificar-continuidade.py
+
+      - name: Verificar links relativos da documentação
+        shell: bash
+        run: |
+          set -euo pipefail
+          falhou=0
+          while IFS= read -r -d '' arquivo; do
+            pasta=$(dirname "$arquivo")
+            while IFS= read -r destino; do
+              case "$destino" in http*|\#*|mailto:*) continue ;; esac
+              alvo="${destino%%#*}"
+              [ -z "$alvo" ] && continue
+              if [ ! -e "$pasta/$alvo" ]; then
+                echo "::error file=$arquivo::link quebrado para $destino"
+                falhou=1
+              fi
+            done < <(grep -oE '\]\([^)]+\)' "$arquivo" | sed -E 's/^\]\(//; s/\)$//')
+          done < <(find docs -name '*.md' -print0)
+          exit $falhou
+
+      - name: Verificar presença do README na raiz
+        run: test -f README.md

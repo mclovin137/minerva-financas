@@ -31,3 +31,12 @@ __pycache__/
 .cache/
 node_modules/
 backend/data/
+
+# Build e evidências geradas localmente (o pipeline publica as suas como artefato)
+backend/target/
+artifacts/
+data/
+frontend/dist/
+backend/src/main/resources/static/
+frontend/playwright-report/
+frontend/test-results/

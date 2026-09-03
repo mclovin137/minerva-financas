@@ -41,7 +41,7 @@ Problemas priorizados
 | Preservar integridade monetária | casos de centavos, arredondamento e invariantes aprovados | 100% dos casos obrigatórios passam |
 | Tornar consultas temporais confiáveis | casos de data, janela útil e preço histórico | 100% dos casos obrigatórios passam |
 | Expor contratos consumíveis | endpoints com payload/status documentados e testados | 100% dos endpoints possuem teste de integração reexecutável, com fixture isolada e limpeza, rollback ou reset entre casos |
-| Suportar uso concorrente no nível 3 | testes concorrentes sem isolamento ou corrupção | zero violações observadas; meta de latência p95 é TBD |
+| Suportar uso concorrente no nível 3 | testes concorrentes sem isolamento ou corrupção | zero violações observadas em 200.000 movimentações |
 
 ---
 
@@ -50,7 +50,7 @@ Problemas priorizados
 Incluso
 - Nível 1: saldo, crédito, débito, CRUD de ativos, compra, venda e posição.
 - Nível 2: datas de movimento, emissão e vencimento, preço por data e consultas temporais.
-- Nível 3: endpoints exatos, seed, autenticação e isolamento da opção A ou consulta assíncrona da opção B, Dockerfile e docker-compose.
+- Nível 3: endpoints exatos, seed, autenticação e isolamento da opção A **e** consulta assíncrona da opção B, Dockerfile e docker-compose.
 - Valores em reais sem fração de centavo, validações e arredondamento para baixo.
 - REST, JSON, códigos HTTP adequados, testes unitários e testes de integração de API e persistência.
 - Interface seguindo [design system](../design/README.md), quando a tela correspondente estiver desenhada.
@@ -64,7 +64,7 @@ Fora de escopo
 
 ### Requisitos funcionais
 
-#### FR-001 Saldo e lançamentos do nível 1
+#### FR-001 Saldo e lançamentos do nível 1 — casos TC-001 a TC-008
 Permitir consultar o saldo da conta corrente, incluir crédito com valor positivo e descrição e incluir débito com valor positivo e descrição. Crédito aumenta e débito reduz o saldo. O saldo não pode ficar negativo.
 
 **Fluxo principal**
@@ -83,7 +83,7 @@ Permitir consultar o saldo da conta corrente, incluir crédito com valor positiv
 
 **Prioridade:** alta
 
-#### FR-002 Cadastro de ativos do nível 1
+#### FR-002 Cadastro de ativos do nível 1 — casos TC-009 a TC-016
 Permitir CRUD de ativos com nome, preço de mercado e tipo. Todos são obrigatórios; tipos válidos são `RV`, `RF` e `FUNDO`; preço unitário aceita até oito casas decimais.
 
 **Fluxo principal**
@@ -99,7 +99,7 @@ Permitir CRUD de ativos com nome, preço de mercado e tipo. Todos são obrigató
 
 **Prioridade:** alta
 
-#### FR-003 Movimentação de ativos do nível 1
+#### FR-003 Movimentação de ativos do nível 1 — casos TC-017 a TC-024
 Permitir compra, venda e consulta com ativo, quantidade de até duas casas decimais e valor da movimentação. Compra e venda geram lançamento correspondente na conta corrente; venda não pode tornar a quantidade total negativa.
 
 **Fluxo principal**
@@ -117,8 +117,8 @@ Permitir compra, venda e consulta com ativo, quantidade de até duas casas decim
 
 **Prioridade:** alta
 
-#### FR-004 Posição e cálculos do nível 1
-Consultar um registro por ativo com nome, tipo, quantidade total, valor de mercado total e rendimento. Quantidade total é compras menos vendas. Valor de mercado total é quantidade total multiplicada pelo preço de mercado. Rendimento é preço de mercado dividido pelo preço médio das compras. Lucro do ativo é soma das vendas menos soma das compras.
+#### FR-004 Posição e cálculos do nível 1 — casos TC-025 a TC-032
+Consultar um registro por ativo com nome, tipo, quantidade total, valor de mercado total e rendimento. Quantidade total é compras menos vendas. Valor de mercado total é quantidade total multiplicada pelo preço de mercado. **Preço médio das compras = (Σ valor de cada compra) ÷ (Σ quantidade de cada compra), ou seja, média ponderada pela quantidade. A soma dos valores e a soma das quantidades são calculadas na escala intermediária exata antes da conversão monetária; aplica-se o floor somente ao resultado da divisão quando ele precisar ser reduzido à escala monetária. Rendimento = preço de mercado ÷ preço médio. Lucro = Σ vendas − Σ compras.**
 
 **Fluxo principal**
 - Agregar movimentações por ativo.
@@ -126,14 +126,14 @@ Consultar um registro por ativo com nome, tipo, quantidade total, valor de merca
 - Retornar a lista de posições.
 
 **Fluxos alternativos e exceções**
-- Ativo sem compras não cria divisão inválida; comportamento de exibição é ❓ LACUNA.
+- Ativo sem compras não cria divisão inválida. O comportamento de exibição deixou de ser lacuna: a posição lista apenas ativos movimentados até a data, o que torna o caso inalcançável em histórico válido — decisão D-A4 do [FDD-001](../fdds/fdd-001-nivel-1.md), aprovada em 2026-09-02.
 
 **Erros previstos**
 - Ativo inexistente em consulta específica e dados incompatíveis.
 
 **Prioridade:** alta
 
-#### FR-005 Datas e valores de mercado do nível 2
+#### FR-005 Datas e valores de mercado do nível 2 — casos TC-033 a TC-040
 Adicionar emissão e vencimento, exigindo emissão anterior ao vencimento, e remover o preço de mercado direto do ativo. Permitir definir e excluir preço de mercado em uma data.
 
 **Fluxo principal**
@@ -142,14 +142,14 @@ Adicionar emissão e vencimento, exigindo emissão anterior ao vencimento, e rem
 - Consultar usando o preço mais recente cuja data seja menor ou igual à consulta.
 
 **Fluxos alternativos e exceções**
-- Ausência de preço elegível é reportada como erro de domínio ou lacuna contratual conforme decisão futura.
+- Ausência de preço elegível está decidida: a consulta responde 200 com `precoMercado`, `valorMercadoTotal` e `rendimento` nulos, sem preço zero, preço posterior ou omissão do ativo — decisão D-B3 do [FDD-002](../fdds/fdd-002-nivel-2-datas.md), aprovada em 2026-09-02.
 
 **Erros previstos**
 - Emissão igual ou posterior ao vencimento; data inválida; preço com escala acima de oito casas.
 
 **Prioridade:** alta
 
-#### FR-006 Temporalidade de lançamentos e movimentações
+#### FR-006 Temporalidade de lançamentos e movimentações — casos TC-041 a TC-048
 Lançamentos e movimentações recebem data do movimento e só afetam saldo ou posição a partir dela, inclusive. Movimentações só ocorrem entre emissão inclusive e vencimento exclusive, em segunda a sexta-feira. Consultas de lançamentos e movimentações exigem data início e data fim, ambas inclusive; saldo e posição exigem data.
 
 **Fluxo principal**
@@ -167,7 +167,7 @@ Lançamentos e movimentações recebem data do movimento e só afetam saldo ou p
 
 **Prioridade:** alta
 
-#### FR-007 Precisão e arredondamento
+#### FR-007 Precisão e arredondamento — casos TC-049 a TC-056
 Representar dinheiro sem fração de centavo. Valores monetários de entrada devem ter no máximo duas casas; preços unitários, até oito; quantidades, até duas. Todo arredondamento necessário em cálculos financeiros ocorre sempre para baixo, de modo determinístico.
 
 **Fluxo principal**
@@ -182,7 +182,7 @@ Representar dinheiro sem fração de centavo. Valores monetários de entrada dev
 
 **Prioridade:** alta
 
-#### FR-008 Endpoints obrigatórios do nível 3
+#### FR-008 Endpoints obrigatórios do nível 3 — casos TC-057 a TC-064
 Disponibilizar exatamente as rotas e payloads abaixo, em JSON. Os POST não precisam devolver conteúdo, somente status adequado.
 
 **Fluxo principal**
@@ -196,7 +196,7 @@ Disponibilizar exatamente as rotas e payloads abaixo, em JSON. Os POST não prec
 
 **Prioridade:** alta
 
-#### FR-009 Opção A multiusuário
+#### FR-009 Opção A multiusuário — casos TC-065 a TC-072
 Todas as requisições usam HTTP Basic. Pré-cadastrar `usuario0` até `usuario9`, com senhas `senha0` até `senha9`, e `root` com senha `spiderman`. Ativos são compartilhados; somente administrativo pode criar, alterar e remover ativos. Usuários comuns veem apenas seus próprios dados; root não gera lançamentos/movimentos nem consulta dados confidenciais.
 
 **Fluxo principal**
@@ -209,9 +209,9 @@ Todas as requisições usam HTTP Basic. Pré-cadastrar `usuario0` até `usuario9
 **Erros previstos**
 - Ausência de Basic, credencial inválida e operação incompatível com o papel.
 
-**Prioridade:** alta, se a opção A for escolhida
+**Prioridade:** alta; a opção A é escopo obrigatório e cumulativo com a opção B.
 
-#### FR-010 Opção B de posição assíncrona
+#### FR-010 Opção B de posição assíncrona — casos TC-073 a TC-080
 `GET /posicao?data=2020-02-28` retorna um id de execução, por exemplo `{"id":42}`. `GET /posicao/42` retorna imediatamente HTTP 425 enquanto não concluído e HTTP 200 com o conteúdo quando concluído; o conteúdo é descartado após a execução. O processamento deve usar memória constante, independente da quantidade de movimentações, e processamento paralelo.
 
 **Fluxo principal**
@@ -226,15 +226,15 @@ Todas as requisições usam HTTP Basic. Pré-cadastrar `usuario0` até `usuario9
 **Erros previstos**
 - Data ausente/inválida, execução inexistente e falha de processamento.
 
-**Prioridade:** alta, se a opção B for escolhida
+**Prioridade:** alta; a opção B é escopo obrigatório e cumulativo com a opção A.
 
 ---
 
 ### Requisitos não funcionais
 
 Performance
-- Nível 3 deve demonstrar bom desempenho sob uso concorrente e thread-safety, sem condição de corrida que viole saldo, posição ou isolamento. Meta numérica de latência e volume concorrente: TBD, não inventada pelo PRD.
-- Opção B deve processar centenas de milhares de movimentações com memória constante, não proporcional ao total armazenado, e usar processamento paralelo.
+- Nível 3 deve demonstrar thread-safety, sem condição de corrida que viole saldo, posição ou isolamento, com volume de **200.000 movimentações**.
+- Opção B deve processar **200.000 movimentações**; a variação de heap deve ficar abaixo de **64 MB**, medida por `Runtime` antes e depois da consulta de posição, e deve haver paralelismo mínimo de **2 threads observável**. A medição é reproduzível por `./mvnw -pl backend -Dtest=PosicaoDesempenhoIT test` (ou `mvn -pl backend -Dtest=PosicaoDesempenhoIT test` quando não houver wrapper), com fixture determinística e relatório do teste.
 
 Disponibilidade
 - Executável standalone em todos os níveis. Meta de disponibilidade externa: TBD, condicionada à implantação gratuita.
@@ -320,7 +320,7 @@ Patrick Jane audita critérios e testes observáveis; o implementador não aprov
 
 #### Estado assíncrono consome memória proporcional
 - **Probabilidade:** média
-- **Impacto:** indisponibilidade com centenas de milhares de movimentos.
+- **Impacto:** indisponibilidade com 200.000 movimentações.
 - **Mitigação:** leitura incremental, métricas de memória e teste de carga controlado.
 - **Plano de contingência:** rejeitar novas execuções, drenar fila e manter resultado descartável.
 
@@ -336,7 +336,7 @@ Patrick Jane audita critérios e testes observáveis; o implementador não aprov
 - Rendimento, quantidade, valor de mercado total e lucro correspondem às fórmulas FR-004, com casos de compra e venda verificáveis.
 - Os cinco endpoints exatos do FR-008 aceitam os payloads definidos no enunciado e retornam status e corpo conforme o FDD-003.
 - Opção A prova Basic em todas as requisições, seed de usuários, papel root e isolamento por usuário; root não transaciona nem acessa dados privados.
-- Opção B prova id, 425 imediato, 200 concluído, descarte do resultado, centenas de milhares de movimentações, memória constante e processamento paralelo.
+- Opção B prova id, 425 imediato, 200 concluído, 200.000 movimentações, variação de heap abaixo de 64 MB por `Runtime` antes/depois, descarte do resultado e ao menos 2 threads observáveis.
 - Integração REST e persistência executa repetidamente e em qualquer ordem, com evidência publicada pelo pipeline; nenhum arquivo de aplicação desta cadeia documental é necessário para este PRD.
 - Interface implementada só usa estados previamente desenhados e passa o piso de acessibilidade e responsividade.
 
@@ -353,4 +353,4 @@ Tipos de teste obrigatórios
 - Testes de acessibilidade e responsividade por faixa para cada tela desenhada.
 
 Estratégia de validação
-- Derivar casos dos critérios acima, com dados próprios por teste, transações limpas e evidências de request/response publicadas pelo pipeline. Validar série temporal com inserção fora de ordem e comparar com uma referência independente. Medir memória e paralelismo em cenário controlado; se a meta numérica não estiver definida, registrar TBD em vez de declarar sucesso quantitativo.
+- Derivar e executar os casos TC-001 a TC-080 da [matriz de testes](../tasks/matriz-de-testes.md), repetidamente e em qualquer ordem, com dados exclusivos e limpeza própria. Cada execução publica request/response e relatório no pipeline `testes-integracao`, em `artifacts/testes/<commit>/<tc-id>/`, e o PR referencia o artefato. Validar série temporal com inserção fora de ordem e comparar com referência independente. Medir a meta D3 no cenário controlado descrito na matriz.

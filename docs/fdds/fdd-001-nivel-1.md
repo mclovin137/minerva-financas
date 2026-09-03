@@ -12,7 +12,7 @@ Revisor: Yoda
 
 Este FDD detalha FR-001 a FR-004 do [PRD-001](../prds/prd-001-financas-pessoais.md), dentro do [HLD-001](../hlds/hld-001-arquitetura.md). O contrato abaixo é fechado antes da implementação; `data` é aceita e persistida no nível 1, e sua semântica temporal completa é ampliada pelo FDD-002. A posição síncrona já usa o caminho comum entre os três níveis. **Este FDD foi revisado e aprovado por Yoda em 2026-09-02; T-001 está liberada para implementação.**
 
-Inclui conta, CRUD de ativos, lançamentos, movimentações e posição síncrona. Exclui Basic multiusuário, regras de emissão/vencimento e posição assíncrona, que entram cumulativamente no nível 3.
+Inclui conta, CRUD de ativos, lançamentos, movimentações e posição. Exclui Basic multiusuário, regras de emissão/vencimento e o processamento assíncrono da posição, que entram cumulativamente no nível 3.
 
 As decisões arquiteturais fechadas na revisão estão na seção 6 e são **normativas**: a implementação não precisa inventar nada além delas. O que permanece `❓ LACUNA` está explicitamente marcado e não pode ser preenchido por suposição.
 
@@ -34,7 +34,7 @@ Todos os requests e responses têm `Content-Type: application/json`. `data` usa 
 | Vender | `POST /movimentacao/venda` | mesmo formato da compra | `201 Created`, sem corpo |
 | Lançamentos | `GET /contacorrente/lancamentos?dataInicio=2020-02-01&dataFim=2020-02-28` | nenhum; ambos os filtros obrigatórios | `200 OK`, lista |
 | Movimentações | `GET /movimentacao?dataInicio=2020-02-01&dataFim=2020-02-28` | nenhum; ambos os filtros obrigatórios | `200 OK`, lista |
-| Posição | `GET /posicao?data=2020-02-28` | nenhum | `200 OK`, lista de posições |
+| Posição | `GET /posicao?data=2020-02-28` | nenhum | `202 Accepted`, `{"id":42}`; resultado em `/posicao/42` |
 
 Para ativos, `tipo` aceita somente `RV`, `RF` ou `FUNDO`; `precoMercado` aceita até oito casas. Valores monetários aceitam duas casas e quantidades duas casas. O `precoMercado` do N1 é a projeção do preço vigente do ativo, não uma coluna do ativo (decisão D-A1); preço por data entra no N2.
 

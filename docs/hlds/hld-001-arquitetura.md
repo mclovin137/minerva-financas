@@ -92,7 +92,7 @@ Fonte de verdade
 | Conta corrente | API | REST JSON | Externa | filtros e payloads do PRD; meta de latência TBD |
 | Ativos e mercado | API | REST JSON | Externa | campos e escalas do PRD |
 | Movimentação | API | REST JSON | Externa | quantidade até 2 casas; operação atômica |
-| Posição síncrona/assíncrona | API | REST JSON | Externa | opção B responde 425 sem bloquear a consulta |
+| Posição assíncrona | API | REST JSON | Externa | `/posicao` cria a execução e `/posicao/{id}` responde 425 sem bloquear a consulta |
 
 ---
 

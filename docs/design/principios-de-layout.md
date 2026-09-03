@@ -12,5 +12,4 @@ Este documento é contrato de composição e interação.
 - HTTP 425 da posição assíncrona é progresso, nunca erro: mostrar skeleton/progresso honesto.
 - Chips de filtro ativo e aviso de rascunho não salvo são empréstimos do Template D; sparkline só entra se sair barato.
 
-❓ LACUNA: estados de foco detalhados de cada componente e desenho dos quatro destinos ainda não foram especificados; implementação que os tocar deve parar.
-
+❓ LACUNA: estados de foco detalhados de cada componente, quatro destinos (conta corrente, carteira/posição, ativos e mercado histórico), estados dos drawers de criação/edição e confirmações destrutivas ainda não foram especificados; implementação que os tocar deve parar. A lista canônica está em [não desenhado](nao-desenhado.md).
