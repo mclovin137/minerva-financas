@@ -2,7 +2,7 @@
 type: minerva-task
 project: Minerva
 date: 2026-09-02
-status: proposta
+status: em-auditoria
 tags: [minerva, task]
 ai-first: true
 ---
@@ -38,3 +38,4 @@ Implementar o [FDD-003](../fdds/fdd-003-nivel-3-e-opcoes.md), no qual A **e** B 
 ## Histórico
 - 2026-09-02: A e B tornadas cumulativas e critérios D3 fixados após auditoria.
 - 2026-09-02: dependência de governança satisfeita — FDD-003 aprovado por Yoda; acrescentados capacidade por rota, ciclo de vida da execução, restrições de memória/paralelismo e a lacuna de seed.
+- 2026-09-03: `status` atualizado para `em-auditoria` — implementação completa, testada (Maven 130/130, `npm run build`, E2E 21/21) e publicada em PR #1 aberto na branch `docs/cadeia-inicial`, aguardando merge. Auditoria independente (Patrick Jane) segue pendente.

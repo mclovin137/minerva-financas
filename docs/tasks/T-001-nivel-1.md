@@ -2,7 +2,7 @@
 type: minerva-task
 project: Minerva
 date: 2026-09-02
-status: proposta
+status: em-auditoria
 tags: [minerva, task]
 ai-first: true
 ---
@@ -47,3 +47,4 @@ Implementar somente o contrato fechado no [FDD-001](../fdds/fdd-001-nivel-1.md).
 ## Histórico
 - 2026-09-02: rotas e critérios fechados; responsabilidade de precisão e evidências particionada por TCs após auditoria.
 - 2026-09-02: dependência de governança satisfeita — FDD-001 aprovado por Yoda; passos ampliados com schema exato, perfil de teste, pacotes e âncora de preço.
+- 2026-09-03: `status` atualizado para `em-auditoria` — implementação completa, testada (Maven 130/130, `npm run build`, E2E 21/21) e publicada em PR #1 aberto na branch `docs/cadeia-inicial`, aguardando merge. Auditoria independente (Patrick Jane) segue pendente.

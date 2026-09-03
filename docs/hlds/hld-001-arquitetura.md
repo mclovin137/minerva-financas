@@ -170,7 +170,7 @@ Decisões pendentes
 - As opções A e B são obrigatórias e cumulativas; não há decisão pendente sobre alternativa.
 - ❓ LACUNA: metas de latência, disponibilidade e tracing não são necessárias para o critério D3 desta rodada. O limite de execuções pendentes deixou de ser lacuna: está fixado em quatro por usuário no [FDD-003](../fdds/fdd-003-nivel-3-e-opcoes.md), D-C3.
 - ❓ LACUNA: gestão de segredos e criptografia em trânsito/repouso. **O tratamento de ausência de preço histórico deixou de ser lacuna**: está decidido no [FDD-002](../fdds/fdd-002-nivel-2-datas.md), D-B3, na revisão arquitetural de 2026-09-02.
-- Nomes de pacote e direção de dependência entre camadas deixaram de ser pendência: com a ADR-001 aceita, o mapa normativo está no [FDD-001](../fdds/fdd-001-nivel-1.md), item 7, com pacote base `br.com.minerva.financas` e gate verificável no pipeline `review`. Este HLD não mantém segunda cópia da lista, para não divergir.
+- Nomes de pacote e direção de dependência entre camadas deixaram de ser pendência: com a ADR-003 aceita, o mapa normativo está na [ADR-003](../adrs/adr-003-estrutura-do-backend.md), com pacote base `br.com.minerva.financas` e gate verificável no pipeline `review`. Este HLD não mantém segunda cópia da lista, para não divergir.
 
 Próximos passos
 - FDD-001, FDD-002 e FDD-003 foram revisados e **aprovados por Yoda em 2026-09-02**; T-001, T-002 e T-003 estão liberadas quanto à dependência de governança. Falta a revisão independente do HLD por Patrick Jane e a decisão do usuário sobre os valores de seed do nível 3.

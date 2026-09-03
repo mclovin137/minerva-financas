@@ -2,7 +2,7 @@
 type: minerva-task
 project: Minerva
 date: 2026-09-02
-status: proposta
+status: em-auditoria
 tags:
   - minerva
   - task
@@ -83,3 +83,4 @@ Nível 2 temporalmente consistente e verificável.
 ## Histórico
 - 2026-09-02: task criada com status proposta.
 - 2026-09-02: dependência de governança satisfeita — FDD-002 aprovado por Yoda; lacuna de preço elegível fechada e passos ampliados com rotas, migration e compatibilidade.
+- 2026-09-03: `status` atualizado para `em-auditoria` — implementação completa, testada (Maven 130/130, `npm run build`, E2E 21/21) e publicada em PR #1 aberto na branch `docs/cadeia-inicial`, aguardando merge. Auditoria independente (Patrick Jane) segue pendente.
