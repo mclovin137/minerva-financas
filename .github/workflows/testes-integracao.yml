@@ -1,0 +1,74 @@
+name: Testes de integração
+
+# Papel de "execução dos casos de teste" da regra de ferro 8: roda a suíte aplicável e publica as
+# evidências como artefato, para que o PR possa referenciá-las.
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  suite-completa:
+    name: Suíte unitária e de integração
+    runs-on: ubuntu-latest
+    steps:
+      - name: Obter o repositório
+        uses: actions/checkout@v4
+
+      - name: Preparar o Java 25
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+          cache: maven
+
+      - name: Executar a suíte
+        run: mvn -B -f backend/pom.xml test
+
+      - name: Reexecutar a suíte
+        # A matriz exige que cada caso seja reexecutável em qualquer ordem e repetidamente. Uma
+        # segunda execução sobre o estado deixado pela primeira é o que prova a limpeza própria de
+        # cada caso; sem ela, um teste que depende de estado residual passaria despercebido.
+        run: mvn -B -f backend/pom.xml test
+
+      - name: Conferir que cada caso publicou evidência
+        # A evidência é obrigação da regra de ferro 7, e a escrita dela é deliberadamente não fatal
+        # dentro do teste — falhar um caso por um erro de I/O de artefato esconderia o resultado
+        # real. Por isso a cobrança acontece aqui: um TC citado nos testes e sem pasta de evidência
+        # reprova o pipeline.
+        shell: bash
+        run: |
+          set -euo pipefail
+          esperados=$(grep -rhoE 'TC-[0-9]{3}' backend/src/test/java | sort -u)
+          faltando=""
+          for tc in $esperados; do
+            if ! find artifacts/testes -type d -name "$tc" | grep -q .; then
+              faltando="$faltando $tc"
+            fi
+          done
+          if [ -n "$faltando" ]; then
+            echo "::error::casos sem evidência publicada:$faltando"
+            exit 1
+          fi
+          echo "OK: $(echo "$esperados" | wc -l) casos com evidência publicada"
+
+      - name: Publicar evidências por caso de teste
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: evidencias-testes-${{ github.sha }}
+          path: artifacts/testes/
+          if-no-files-found: error
+
+      - name: Publicar relatórios do Surefire
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: relatorios-surefire-${{ github.sha }}
+          path: backend/target/surefire-reports/
+          if-no-files-found: warn

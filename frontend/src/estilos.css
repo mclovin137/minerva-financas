@@ -1,0 +1,329 @@
+/* Tokens do contrato visual: docs/design/tokens.md e docs/design/tipografia.md.
+   Os valores são copiados de lá, não reinventados aqui. */
+
+:root {
+  --color-primary: #1b6ca8;
+  --color-primary-hover: #155a8a;
+  --color-primary-light: #e3f0f9;
+  --color-primary-deep: #0b2e4f;
+  --color-background: #fafaf9;
+  --color-surface: #ffffff;
+  --color-border: #e4e4e1;
+  --color-text-primary: #1a1a18;
+  --color-text-secondary: #6b6b66;
+  --color-success: #12805c;
+  --color-warning: #b2740b;
+  --color-error: #c0362c;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 16px;
+  --space-4: 24px;
+  --space-5: 32px;
+  --space-6: 48px;
+
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-pill: 999px;
+
+  --elevation-1: 0 1px 2px rgba(26, 26, 24, 0.08);
+  --elevation-2: 0 4px 12px rgba(26, 26, 24, 0.12);
+  --elevation-3: 0 12px 32px rgba(26, 26, 24, 0.16);
+
+  --fonte-display: Sora, "Segoe UI", system-ui, sans-serif;
+  --fonte-corpo: "Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--color-background);
+  color: var(--color-text-primary);
+  font-family: var(--fonte-corpo);
+  font-size: 16px;
+  line-height: 1.55;
+}
+
+h1, h2, h3 { font-family: var(--fonte-display); font-weight: 600; margin: 0; }
+h1 { font-size: 28px; }
+h2 { font-size: 20px; }
+
+/* Anel de foco único em toda a aplicação. Nunca outline:none sem substituto visível. */
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Números monetários com largura fixa: sem isso os dígitos dançam e a comparação entre linhas
+   deixa de valer. É contrato em docs/design/tipografia.md. */
+.numero { font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+.pular-para-conteudo {
+  position: absolute;
+  left: -9999px;
+  top: var(--space-2);
+  background: var(--color-surface);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  z-index: 100;
+}
+.pular-para-conteudo:focus { left: var(--space-3); }
+
+/* ---------------------------------------------------------------- estrutura */
+
+.aplicacao { min-height: 100vh; display: flex; flex-direction: column; }
+
+.cabecalho {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-2) var(--space-4);
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+}
+.cabecalho .marca { font-family: var(--fonte-display); font-size: 18px; color: var(--color-primary-deep); }
+.cabecalho .espacador { flex: 1; }
+.cabecalho .usuario { font-size: 13px; color: var(--color-text-secondary); text-align: right; }
+.cabecalho .usuario strong { display: block; color: var(--color-text-primary); font-size: 14px; }
+
+.cursor-data { display: flex; align-items: center; gap: var(--space-1); }
+.cursor-data input {
+  font: inherit;
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+}
+
+.corpo { display: flex; flex: 1; min-height: 0; }
+
+.trilho {
+  width: 64px;
+  flex-shrink: 0;
+  background: var(--color-surface);
+  border-right: 1px solid var(--color-border);
+  padding: var(--space-3) 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+.trilho button {
+  position: relative;
+  width: 100%;
+  height: 48px;
+  border: 0;
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.trilho button:hover:not(:disabled) { background: var(--color-primary-light); color: var(--color-primary); }
+.trilho button[aria-current="page"] { background: var(--color-primary-light); color: var(--color-primary); }
+/* A barra à esquerda é o segundo sinal do estado ativo: cor sozinha não basta. */
+.trilho button[aria-current="page"]::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 8px; bottom: 8px;
+  width: 3px;
+  background: var(--color-primary);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+}
+/* Destino indisponível continua visível: esconder rotas faria os dois papéis verem aplicações
+   diferentes, e a diferença viraria suporte. */
+.trilho button:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.conteudo { flex: 1; padding: var(--space-4); min-width: 0; }
+.conteudo > header { display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-4); }
+.conteudo > header .espacador { flex: 1; }
+
+/* ---------------------------------------------------------------- indicadores */
+
+.indicadores { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-3); margin-bottom: var(--space-4); }
+.indicador {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-3) var(--space-4);
+  box-shadow: var(--elevation-1);
+}
+.indicador .rotulo {
+  font-size: 12px; font-weight: 600; letter-spacing: 0.04em;
+  text-transform: uppercase; color: var(--color-text-secondary);
+}
+.indicador .valor { font-family: var(--fonte-display); font-size: 28px; }
+.indicador.destaque .valor { font-size: 44px; }
+
+/* ---------------------------------------------------------------- tabela */
+
+.tabela-rolagem { overflow-x: auto; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); }
+table { width: 100%; border-collapse: collapse; font-size: 15px; }
+thead th {
+  text-align: left;
+  font-size: 12px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase;
+  color: var(--color-text-secondary);
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--color-border);
+  white-space: nowrap;
+}
+tbody td { padding: var(--space-2) var(--space-3); border-bottom: 1px solid var(--color-border); }
+tbody tr:last-child td { border-bottom: 0; }
+td.direita, th.direita { text-align: right; }
+.texto-truncado { display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+/* Entrada e saída não dependem só de cor: há sinal e seta no próprio conteúdo. */
+.entrada { color: var(--color-success); }
+.saida { color: var(--color-error); }
+
+/* ---------------------------------------------------------------- botões */
+
+button.acao, a.acao {
+  font: inherit; font-weight: 600;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  min-height: 44px;
+}
+button.acao:hover:not(:disabled) { border-color: var(--color-primary); color: var(--color-primary); }
+button.acao.primaria { background: var(--color-primary); border-color: var(--color-primary); color: #fff; }
+button.acao.primaria:hover:not(:disabled) { background: var(--color-primary-hover); border-color: var(--color-primary-hover); color: #fff; }
+button.acao.destrutiva { background: var(--color-error); border-color: var(--color-error); color: #fff; }
+button.acao:disabled { opacity: 0.55; cursor: not-allowed; }
+button.discreta { border: 0; background: transparent; cursor: pointer; font: inherit; color: var(--color-primary); min-height: 44px; padding: 0 var(--space-2); }
+
+/* ---------------------------------------------------------------- estados */
+
+.skeleton-linha {
+  height: 20px;
+  margin: var(--space-2) 0;
+  border-radius: var(--radius-sm);
+  background: var(--color-border);
+  opacity: 0.4;
+  animation: pulsar 1.4s ease-in-out infinite;
+}
+@keyframes pulsar { 0%, 100% { opacity: 0.25; } 50% { opacity: 0.5; } }
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-linha { animation: none; opacity: 0.35; }
+}
+
+.estado-vazio, .estado-erro {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6) var(--space-4);
+  text-align: center;
+}
+.estado-erro { border-color: var(--color-error); text-align: left; padding: var(--space-3) var(--space-4); }
+.estado-erro .titulo { font-weight: 600; }
+.estado-vazio .icone { font-size: 48px; color: var(--color-text-secondary); }
+.estado-vazio p, .estado-erro p { color: var(--color-text-secondary); margin: var(--space-2) 0 var(--space-3); }
+
+.faixa-offline {
+  background: var(--color-warning);
+  color: #fff;
+  padding: var(--space-2) var(--space-4);
+  font-weight: 600;
+}
+
+.aviso {
+  position: fixed;
+  right: var(--space-4); bottom: var(--space-4);
+  background: var(--color-text-primary);
+  color: #fff;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  box-shadow: var(--elevation-2);
+  z-index: 60;
+}
+
+/* ---------------------------------------------------------------- drawer e modal */
+
+.sobreposicao {
+  position: fixed; inset: 0;
+  background: rgba(26, 26, 24, 0.35);
+  z-index: 40;
+  display: flex;
+  justify-content: flex-end;
+}
+.drawer {
+  width: min(480px, 100vw - 32px);
+  background: var(--color-surface);
+  box-shadow: var(--elevation-3);
+  display: flex;
+  flex-direction: column;
+}
+.drawer header, .modal header { padding: var(--space-3) var(--space-4); border-bottom: 1px solid var(--color-border); display: flex; align-items: center; gap: var(--space-2); }
+.drawer header h2, .modal header h2 { flex: 1; }
+.drawer .campos { padding: var(--space-4); overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: var(--space-3); }
+.drawer footer, .modal footer { padding: var(--space-3) var(--space-4); border-top: 1px solid var(--color-border); display: flex; gap: var(--space-2); justify-content: flex-end; }
+
+.campo { display: flex; flex-direction: column; gap: var(--space-1); }
+.campo label { font-size: 12px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--color-text-secondary); }
+.campo input, .campo select {
+  font: inherit;
+  padding: var(--space-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  min-height: 44px;
+}
+.campo input[aria-invalid="true"], .campo select[aria-invalid="true"] { border-color: var(--color-error); }
+.campo .mensagem-erro { font-size: 13px; color: var(--color-error); }
+.erro-dominio { color: var(--color-error); font-size: 14px; margin-right: auto; align-self: center; }
+
+.modal-fundo { position: fixed; inset: 0; background: rgba(26, 26, 24, 0.35); z-index: 50; display: flex; align-items: center; justify-content: center; }
+.modal { width: min(420px, 100vw - 32px); background: var(--color-surface); border-radius: var(--radius-lg); box-shadow: var(--elevation-3); }
+.modal .corpo { padding: var(--space-4); }
+
+/* ---------------------------------------------------------------- entrada */
+
+.tela-entrada { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: var(--space-4); }
+.tela-entrada form {
+  width: min(380px, 100%);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--elevation-1);
+  padding: var(--space-5);
+  display: flex; flex-direction: column; gap: var(--space-3);
+}
+
+/* ---------------------------------------------------------------- responsividade
+   Cada faixa tem comportamento próprio, não a mesma tela encolhida. Contrato em
+   docs/design/responsividade.md. */
+
+@media (max-width: 1023px) {
+  .indicadores { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 767px) {
+  .corpo { flex-direction: column-reverse; }
+  /* O trilho vira barra inferior: no polegar, e não sob a mão. */
+  .trilho {
+    width: 100%;
+    height: 60px;
+    flex-direction: row;
+    border-right: 0;
+    border-top: 1px solid var(--color-border);
+    padding: 0;
+    position: sticky; bottom: 0; z-index: 20;
+  }
+  .trilho button[aria-current="page"]::before { left: 8px; right: 8px; top: 0; bottom: auto; width: auto; height: 3px; border-radius: 0 0 var(--radius-sm) var(--radius-sm); }
+  .indicadores { grid-template-columns: 1fr; }
+  .conteudo { padding: var(--space-3); }
+  .cabecalho { flex-wrap: wrap; }
+  .cursor-data { order: 3; width: 100%; }
+  /* Drawer vira bottom sheet. */
+  .sobreposicao { align-items: flex-end; justify-content: center; }
+  .drawer { width: 100%; max-height: 80vh; border-radius: var(--radius-lg) var(--radius-lg) 0 0; }
+}

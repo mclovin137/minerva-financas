@@ -1,0 +1,27 @@
+# Sobe a aplicação e o banco embarcado em um único serviço — não há banco externo a orquestrar.
+# Uso: docker compose up --build
+
+services:
+  minerva-financas:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: minerva-financas:local
+    container_name: minerva-financas
+    ports:
+      - "8080:8080"
+    volumes:
+      - minerva-dados:/app/data
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:sqlite:/app/data/minerva-financas.db
+    restart: unless-stopped
+    healthcheck:
+      # A rota exige HTTP Basic; um 401 já prova que o servidor está de pé e roteando.
+      test: ["CMD-SHELL", "curl -fsS -o /dev/null -w '%{http_code}' http://localhost:8080/ativos | grep -qE '200|401'"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+volumes:
+  minerva-dados:

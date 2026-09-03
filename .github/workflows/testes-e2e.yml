@@ -1,0 +1,74 @@
+name: Testes de ponta a ponta
+
+# Complementa o pipeline de testes de integração: aqui a aplicação é exercitada como o avaliador vai
+# usá-la — navegador real, interface real, API real e banco real, no mesmo processo.
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  playwright:
+    name: Fluxo completo no navegador
+    runs-on: ubuntu-latest
+    steps:
+      - name: Obter o repositório
+        uses: actions/checkout@v4
+
+      - name: Preparar o Java 25
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+          cache: maven
+
+      - name: Preparar o Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Instalar dependências da interface
+        working-directory: frontend
+        run: npm ci
+
+      - name: Compilar a interface
+        # Precisa vir antes do empacotamento: o Maven só embute a interface no jar quando
+        # frontend/dist existe, e sem ela o E2E rodaria contra uma API sem telas.
+        working-directory: frontend
+        run: npm run build
+
+      - name: Empacotar a aplicação
+        run: mvn -B -f backend/pom.xml -DskipTests package
+
+      - name: Instalar o navegador
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+
+      - name: Executar os testes de ponta a ponta
+        working-directory: frontend
+        run: npm run e2e
+
+      - name: Publicar o relatório do Playwright
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: relatorio-e2e-${{ github.sha }}
+          path: frontend/playwright-report/
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Publicar rastros das falhas
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rastros-e2e-${{ github.sha }}
+          path: frontend/test-results/
+          if-no-files-found: ignore
+          retention-days: 7

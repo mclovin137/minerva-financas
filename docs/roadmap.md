@@ -1,21 +1,21 @@
-# Roadmap — Minerva Finanças
+# Roadmap: direção de produto Minerva Finanças
 
-Aplicação de finanças pessoais para o desafio MAPS, construída em quatro lotes.
+Aplicação de finanças pessoais para o desafio MAPS. A direção é guiada pelo [PRD-001](prds/prd-001-financas-pessoais.md), organizada pelo [HLD-001](hlds/hld-001-arquitetura.md), detalhada nos [FDDs](fdds/README.md) e executada nas [tasks T-001 a T-003](tasks/README.md). A direção visual vigente está na [ADR-002](adrs/adr-002-direcao-visual.md).
 
-## Lote 1 — Governança e fundação
+## Fundação documental concluída nesta cadeia
 
 - Governança copiada do template autorizado e estado reescrito para esta aplicação.
 - Stack registrada na [ADR-001](adrs/adr-001-stack-da-aplicacao.md).
-- Esqueleto Java 25 + Spring Boot + Maven, SQLite embarcado e schema inicial.
+- Design system auditável, PRD, HLD, FDDs e tasks criados; revisão independente ainda pendente.
 
-## Lote 2 — Nível 1
+## Direção de produto 1: núcleo financeiro
 
-Implementar APIs de conta corrente, CRUD de ativos, compras, vendas e consulta de posição, com validações de valores, quantidades, saldo e posição.
+Executar T-001 após aprovação do FDD-001. Resultado: conta, ativos, operações e posição com integridade financeira.
 
-## Lote 3 — Nível 2
+## Direção de produto 2: eixo temporal
 
-Adicionar datas de emissão/vencimento e movimento, valores de mercado por data, consultas temporais, validação de não negatividade em nenhuma data e consulta assíncrona de posição com memória constante (opção B), além da alternativa multiusuário (opção A).
+Executar T-002 após T-001. Resultado: consultas por data, janela útil e mercado histórico sem negatividade em qualquer data.
 
-## Lote 4 — Nível 3 e entrega
+## Direção de produto 3: contrato e escala
 
-Endurecer thread-safety e desempenho concorrente, completar testes de integração, pré-cadastros, Dockerfile, docker-compose, README final e documentação da segurança e execução.
+Executar T-003 após decisão A/B. Resultado: contrato N3, seed, thread-safety, Docker e segurança ou consulta assíncrona com memória constante. Deploy cloud permanece adiado.

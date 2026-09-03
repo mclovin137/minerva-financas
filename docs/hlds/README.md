@@ -12,4 +12,4 @@ Este diretório é o espelho versionado; a cópia canônica de cada HLD fica na 
 
 | HLD | Título | Contexto | Status |
 |---|---|---|---|
-| [Neo: investigação de sistemas e redes](hld-neo-investigacao-sistemas-redes.md) | Separação entre identidade, prompt, TRACE, capabilities, evidência e handoffs | Investigação agnóstica de sistemas e redes | Proposta; revisão independente pendente |
+| [HLD-001](hld-001-arquitetura.md) | Arquitetura Minerva Finanças | Camadas DDD, REST, SQLite e fronteira React | proposta |
